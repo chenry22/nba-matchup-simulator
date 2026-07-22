@@ -17,7 +17,6 @@ from nba_api.stats.endpoints import (
     playerdashptreb,
     playerdashptshotdefend,
 )
-import numpy
 
 DELAY_TIME = 1
 

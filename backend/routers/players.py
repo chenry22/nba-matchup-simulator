@@ -6,7 +6,6 @@ Wraps nba_api to fetch and parse player stats into sim-ready profiles.
 from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
 from .nba_service import NBAService
-from .player_models import SimPlayerProfile
 
 router = APIRouter()
 nba = NBAService()

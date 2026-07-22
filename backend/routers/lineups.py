@@ -6,7 +6,6 @@ Saved lineups + challenge system.
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional
-from routers.auth import oauth2_scheme
 
 router = APIRouter()
 
@@ -37,45 +36,6 @@ async def list_public_lineups(mode: Optional[str] = None, skip: int = 0, limit: 
     TODO: Query DB with optional mode filter, paginate.
     """
     return []
-
-
-@router.post("/save")
-async def save_lineup(body: SaveLineupRequest, token: str = Depends(oauth2_scheme)):
-    """
-    Save a named lineup to the authenticated user's collection.
-    TODO:
-      1. Validate cap compliance if body.cap_mode == True
-         (sum salaries from /players/{id}/salary/{season} for each slot)
-      2. Persist to DB
-      3. Return lineup_id
-    """
-    raise HTTPException(501, "Not implemented")
-
-
-@router.get("/mine")
-async def my_lineups(token: str = Depends(oauth2_scheme)):
-    """
-    Returns all lineups owned by the current user.
-    TODO: Fetch from DB filtered by user_id from JWT.
-    """
-    return []
-
-
-@router.post("/challenge")
-async def challenge_lineup(body: ChallengeRequest, token: str = Depends(oauth2_scheme)):
-    """
-    Prepares a simulation by resolving both lineups' full SimPlayerProfiles.
-    Returns { home_profiles: [...], away_profiles: [...] } for the frontend
-    sim engine to consume. The actual simulation runs 100% on the client.
-
-    TODO:
-      1. Fetch target lineup from DB by lineup_id
-      2. Validate challenger_slots length matches target
-      3. Fetch SimPlayerProfile for each slot via NBAService
-      4. Return both sets of profiles
-    """
-    raise HTTPException(501, "Not implemented")
-
 
 @router.get("/salary-check")
 async def check_salary(slots: list[LineupSlot], cap: int = 136000000):
