@@ -18,6 +18,21 @@ from nba_api.stats.endpoints import (
     playerdashptshotdefend,
 )
 
+from nba_api.stats.library.http import NBAStatsHTTP
+
+NBAStatsHTTP().headers = {
+    "Host": "stats.nba.com",
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Referer": "https://www.nba.com/",
+    "Origin": "https://www.nba.com",
+}
+
 DELAY_TIME = 1
 
 PACE_DICT = { "1946-47": 93.7, "1947-48": 91.9, "1948-49": 84.1, "1949-50": 93.1,
@@ -82,9 +97,6 @@ class NBAService:
         end_year = int(data.iloc[0]["TO_YEAR"])
         if player_id in map(lambda x : x['id'], players.get_active_players()):
             end_year = 2026
-        
-        print(data.values)
-        print(start_year, end_year)
 
         seasons = []
         for x in range(end_year - start_year):

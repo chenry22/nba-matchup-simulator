@@ -15,7 +15,7 @@ app = FastAPI(title="NBA Matchup Simulator API", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", 
-        "https://nba-matchup-simulator-backend-jfm8d66bx-chenry22s-projects.vercel.app"],
+        "https://nba-player-profiles.onrender.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
