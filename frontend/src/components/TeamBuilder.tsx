@@ -1,7 +1,7 @@
 import { type ChangeEvent } from "react";
-import { getPlayerSeasons } from "../api/client";
 import PlayerSearch from "./PlayerSearch";
 import type { Team } from "../sim/types";
+import type { FirebasePlayerMatch } from "../cache/firebase";
 
 interface Props {
   team: Team;
@@ -9,13 +9,13 @@ interface Props {
 }
 
 export default function TeamBuilder({ team, setTeam }: Props) {
-  const addPlayer = async (player: any) => {
+  const addPlayer = async (player: FirebasePlayerMatch) => {
     if (team.roster.length >= 5) return;
-    let seasons = await getPlayerSeasons(player.id);
+    let seasons = player.seasons;
     let dup = team.roster.filter(p => p.id ===  player.id).length;
     let p = {
-      full_name: player.full_name, id: player.id,
-      duplicate: dup, seasons: seasons.data, selectedSeason: seasons.data[seasons.data.length - 1]
+      full_name: player.firstName + " " + player.lastName, id: player.id,
+      duplicate: dup, seasons, selectedSeason: seasons.sort()[0]
     }
     setTeam({...team, rosterSelect: [...team.rosterSelect, p]});
   };

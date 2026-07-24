@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://nba-player-profiles.onrender.com",
+  baseURL: "http://localhost:8000",
 });
 
 export const searchPlayers = (q: any) =>

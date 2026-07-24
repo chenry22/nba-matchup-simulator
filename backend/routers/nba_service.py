@@ -18,21 +18,6 @@ from nba_api.stats.endpoints import (
     playerdashptshotdefend,
 )
 
-from nba_api.stats.library.http import NBAStatsHTTP
-
-NBAStatsHTTP().headers = {
-    "Host": "stats.nba.com",
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/120.0.0.0 Safari/537.36"
-    ),
-    "Accept": "application/json, text/plain, */*",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Referer": "https://www.nba.com/",
-    "Origin": "https://www.nba.com",
-}
-
 DELAY_TIME = 1
 
 PACE_DICT = { "1946-47": 93.7, "1947-48": 91.9, "1948-49": 84.1, "1949-50": 93.1,
@@ -50,7 +35,8 @@ PACE_DICT = { "1946-47": 93.7, "1947-48": 91.9, "1948-49": 84.1, "1949-50": 93.1
     "2005-06": 90.5, "2006-07": 91.9, "2007-08": 92.4, "2008-09": 91.7, "2009-10": 92.7,
     "2010-11": 92.1, "2011-12": 91.3, "2012-13": 92.0, "2013-14": 93.9, "2014-15": 93.9, 
     "2015-16": 95.8, "2016-17": 96.4, "2017-18": 97.3, "2018-19": 100.0, "2019-20": 100.3,
-    "2020-21": 99.2, "2021-22": 98.2, "2022-23": 99.2, "2023-24": 98.5, "2024-25": 98.8
+    "2020-21": 99.2, "2021-22": 98.2, "2022-23": 99.2, "2023-24": 98.5, "2024-25": 98.8,
+    "2025-26": 99.4
 }
 ZONES_FOR_POS = {
     # restricted, paint non-ra, mid, three
@@ -122,17 +108,16 @@ class NBAService:
         time.sleep(DELAY_TIME)
         name, pos, height, weight = info[["DISPLAY_FIRST_LAST", "POSITION", "HEIGHT", "WEIGHT"]].loc[0]
         pos_key = str(pos).split("-")[0]
+        pace_adjust = 100 / PACE_DICT[season]
 
         # Usage, Misc
         basic = playerdashboardbygeneralsplits.PlayerDashboardByGeneralSplits(player_id=player_id, season=season, per_mode_detailed='Per100Possessions', rank='N').get_data_frames()[0]
-        print(basic)
         if basic.empty:
             basic = playercareerstats.PlayerCareerStats(player_id=player_id).get_data_frames()[0]
             basic = basic[basic["SEASON_ID"] == season]
             if basic.empty:
                 return
             basic = basic.iloc[0]
-            pace_adjust = 100 / PACE_DICT[season]
             mins = float(basic["MIN"]) / int(basic["GP"])
         else:
             basic = basic.iloc[0]

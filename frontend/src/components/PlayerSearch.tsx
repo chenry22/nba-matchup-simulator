@@ -1,14 +1,14 @@
 // src/components/PlayerSearch.tsx
 import { useState } from "react";
-import { searchPlayers } from "../api/client";
+import { searchForPlayer, type FirebasePlayerMatch } from "../cache/firebase";
 
 interface Props {
-  onSelect: (player: any) => void;
+  onSelect: (player: FirebasePlayerMatch) => void;
 }
 
 export default function PlayerSearch({ onSelect }: Props) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<FirebasePlayerMatch[]>([]);
 
   const handleChange = async (val: string) => {
     setQuery(val);
@@ -16,8 +16,8 @@ export default function PlayerSearch({ onSelect }: Props) {
       setResults([]);
       return;
     }
-    const res = await searchPlayers(val);
-    setResults(res.data.slice(0, 3));
+    const res = await searchForPlayer(val);
+    setResults(res.slice(0, 3));
   };
 
   return (
@@ -35,7 +35,7 @@ export default function PlayerSearch({ onSelect }: Props) {
             onClick={() => onSelect(player)}
             style={{ cursor: "pointer", fontSize: "0.8rem" }}
           >
-            {player.full_name}
+            {player.firstName} {player.lastName}
           </div>
         ))}
       </div>

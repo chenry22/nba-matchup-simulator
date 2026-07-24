@@ -92,33 +92,20 @@ export interface Player {
     pace: number,
   },
 
-  salary: string
+  salary: string,
+  ratings: PlayerRating,
 }
 export interface PlayerRating {
-  overall: number, impact: number, shot_tendency: number
-
+  impact: number, shot_tendency: number
   scoring: {
-    overall: number,
+    overall: number, efficiency: number, three: number,
     zones: {
-      restricted_area: { skill: number, tendency: number },
-      paint_non_ra: { skill: number, tendency: number },
-      mid_range: { skill: number, tendency: number },
-      left_corner_3: { skill: number, tendency: number }, 
-      right_corner_3: { skill: number, tendency: number }, 
-      above_break_3: { skill: number, tendency: number }
-    },
-    shot_types: {
-      tip_shot: { skill: number, tendency: number }, 
-      bank_shot: { skill: number, tendency: number },
-      layup: { skill: number, tendency: number },
-      jump_shot_two: { skill: number, tendency: number }, 
-      jump_shot_three: { skill: number, tendency: number },
-      hook_shot: { skill: number, tendency: number },
-      alley_oop: { skill: number, tendency: number }, 
-      finger_roll: { skill: number, tendency: number },
-      fadeaway_two: { skill: number, tendency: number },
-      fadeaway_three: { skill: number, tendency: number },
-      dunk: { skill: number, tendency: number }
+      restricted_area: { skill: number, tendency: number, ast_buff: number },
+      paint_non_ra: { skill: number, tendency: number, ast_buff: number },
+      mid_range: { skill: number, tendency: number, ast_buff: number },
+      left_corner_3: { skill: number, tendency: number, ast_buff: number }, 
+      right_corner_3: { skill: number, tendency: number, ast_buff: number }, 
+      above_break_3: { skill: number, tendency: number, ast_buff: number}
     },
     free_throw: number, draw_foul: number,
   },
@@ -128,11 +115,15 @@ export interface PlayerRating {
     mid_range: number, three: number,
     stl: number, blk: number, fl: number,
   },
-  reb: number, oreb: number, dreb: number,
-  ast: number, tov: number,
+  rebounding: {
+    contested_rebounding: number, oreb: number, dreb: number,
+  },
+  playmaking: {
+    ast: number, tov: number, ast_rate: number
+  },
   clutch: {
-    end_three_bonus: number, end_two_bonus: number,
-    final_three_bonus: number, final_two_bonus: number,
+    end_three: number, end_buff: number, end_ft: number,
+    final_three: number, final_buff: number, final_ft: number
   }
 }
 

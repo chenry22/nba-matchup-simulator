@@ -1,49 +1,22 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import TeamBuilder from "../components/TeamBuilder";
 import CourtView from "../components/CourtView";
 import BoxScore from "../components/BoxScore";
 import PlayByPlay from "../components/PlayByPlay";
 import type { Player, PlayerSelect, PlayerStats, Team } from "../sim/types";
 import { useSimulation } from "../sim/useSimulation";
-import { cachePlayerData, getCachedPlayerData } from "../cache/firebase";
-import { getActivePlayers, getPlayerData } from "../api/client";
-import RatingsBlock from "../components/RatingsBlock";
-import { teamStyles } from "../components/TeamColors";
-import { getOverall, getRatings } from "../components/Ratings";
+import { getCachedPlayerData } from "../cache/firebase";
 import StatHighlights from "../components/StatHighlights";
+import RatingPreviewBlock from "../components/ratings/RatingPreviewBlock";
+import PlayerIndex from "../components/PlayerIndex";
+import FullRatingProfile from "../components/ratings/FullRatingProfile";
 
 export default function SimulatorPage() {
-  const [bgLoad, setbgLoad] = useState(false);
-  useEffect(() => {
-    const load = async () => {
-      if (bgLoad) return;
-      if (window.confirm("load?")) {
-        setbgLoad(true);
-        const ids: number[] = (await getActivePlayers()).data;
-        for (var id of ids) {
-          let cached = await getCachedPlayerData(id, '2025-26');
-          if (cached) { 
-            console.log("Found cached data.");
-            continue;
-          }
-
-          let data = await getPlayerData(id, '2025-26');
-          if (data) {
-            let p = data.data as Player
-            cachePlayerData(p);
-            console.log("Cached " + p.name);
-          }
-        }
-      }
-    }
-    load();
-  }, []);
-
   const [teamA, setTeamA] = useState<Team>({ name: "Team A", color: "red", rosterSelect: [], roster: [], stats: []});
   const [teamB, setTeamB] = useState<Team>({ name: "Team B", color: "blue", rosterSelect: [], roster: [], stats: []});
 
   const [loading, setLoading] = useState(false);
-  const [tab, setTab] = useState<'teamBuilder' | 'simulator'>('teamBuilder');
+  const [tab, setTab] = useState<'teamBuilder' | 'simulator' | 'players'>('teamBuilder');
 
   const [showRatingProfile, setRatingProfileOverlay] = useState<Player | undefined>(undefined);
   const [showBoxScore, setShowBoxScore] = useState(false);
@@ -58,13 +31,13 @@ export default function SimulatorPage() {
           console.log("Found cached data.");
           return cached as Player;
         }
-
-        let data = await getPlayerData(player.id, player.selectedSeason);
-        if(data) {
-          let p = data.data as Player;
-          cachePlayerData(p);
-          return p;
-        }
+        // let data = await getPlayerData(player.id, player.selectedSeason);
+        // if(data) {
+        //   let p = data.data as Player; 
+        //   p.ratings = getRatings(p);
+        //   cachePlayerData(p);
+        //   return p;
+        // }
         return undefined;
       })  
     );
@@ -112,38 +85,19 @@ export default function SimulatorPage() {
     }
   }
 
-  function ratingBlock(p: Player) {
-    const ovr = getOverall(getRatings(p));
-    return <div key={p.id} 
-      style={{ display: 'flex', gap: '10px', background: 'white', padding: '10px', 
-        borderRadius: '8px', border: '2px solid gray', cursor: 'pointer',
-      }}
-      onClick={() => setRatingProfileOverlay(p)}
-    >
-      <img src={`https://cdn.nba.com/headshots/nba/latest/260x190/${p.id}.png`}
-        style={{ maxWidth: '110px', maxHeight: '90px', objectFit: 'contain'}}></img>
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: 'center', gap: '4px' }}>
-        <span style={{ color: 'black', whiteSpace: 'nowrap' }}><b>{p.name}</b> <span style={{ fontSize: '0.7rem', opacity: '0.7', marginLeft: '2px' }}>({p.season})</span></span>
-        <span style={{ whiteSpace: 'nowrap' }}>
-          <span style={{ fontWeight: 'bold', color: `rgb(${5 * Math.max(0, 70 - ovr)}, ${3 * Math.max(0, ovr - 30)}, 80)` }}>{Math.round(ovr)} OVR</span>
-          <span style={{...teamStyles[p.team], 
-              borderRadius: '8px', borderWidth: '1px', margin: ' 0 12px', padding: '3px 5px',
-              fontWeight: 'bold', fontSize: '0.7rem'
-            }}>{p.team}</span>
-          <span style={{ fontSize: '0.8rem'}}>{p.position}</span>
-        </span>
-
-        <div style={styles.button}>View Player Profile</div>
-      </div>
-    </div>
-  }
-
   return (
     <div style={styles.container}>
       <div style={{ display: 'flex', gap: '20px', margin: '10px 16px 0' }}>
         <div style={tab === 'teamBuilder' ? styles.activeTab : styles.tab} onClick={() => setTab('teamBuilder')}>Build Teams</div>
         <div style={tab === 'simulator' ? styles.activeTab : styles.tab} onClick={() => setTab('simulator')}>Simulate</div>
+        <div style={tab === 'players' ? styles.activeTab : styles.tab} onClick={() => setTab('players')}>Player Index</div>
       </div>
+
+      { tab === 'players' &&
+        <div style={styles.page}>
+          <PlayerIndex/>
+        </div>
+      }
 
       { tab === 'teamBuilder' && 
         <div style={styles.page}>
@@ -178,14 +132,14 @@ export default function SimulatorPage() {
             <div style={styles.ratingPreviews}>
               <h2>{teamA.name}</h2>
               <div style={styles.horizontalScroll}>
-                { teamA.roster.map(ratingBlock)}
+                { teamA.roster.map(p => <RatingPreviewBlock p={p} setRatingProfileOverlay={() => setRatingProfileOverlay(p)}/>)}
               </div>
             </div>
             <div style={{height: '20px' }}></div>
             <div style={styles.ratingPreviews}>
               <h2>{teamB.name}</h2>
               <div style={styles.horizontalScroll}>
-                { teamB.roster.map(ratingBlock)}
+                { teamB.roster.map(p => <RatingPreviewBlock p={p} setRatingProfileOverlay={() => setRatingProfileOverlay(p)}/>)}
               </div>
             </div>
             </>
@@ -235,19 +189,7 @@ export default function SimulatorPage() {
             </div>
           }
 
-          { showRatingProfile && 
-            <div style={{ position: 'fixed', background: '#00000075', 
-              width: '100%', height: '100%', top: 0, left: 0
-            }} onClick={() => setRatingProfileOverlay(undefined)}>
-              <div style={{...styles.overlayBg, maxWidth: '60%', minWidth: '440px' }} onClick={(e) => e.stopPropagation()}>
-                <RatingsBlock p={showRatingProfile}></RatingsBlock>
-              </div>
-              <span style={{ position: 'absolute', top: '2dvh', right: '15%', fontSize: '1.3rem', lineHeight: '1.5rem', fontWeight: 'bold',
-                  backgroundColor: 'darkblue', borderRadius: '24px', padding: '6px 12px', cursor: 'pointer', color: 'white'
-                }} onClick={() => setRatingProfileOverlay(undefined)}
-                >x</span>
-            </div>
-          }
+          { showRatingProfile && <FullRatingProfile showRatingProfile={showRatingProfile} setRatingProfileOverlay={setRatingProfileOverlay}/> }
 
           { showBoxScore && game &&
             <div style={{ position: 'fixed', background: '#00000075', 

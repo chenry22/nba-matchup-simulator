@@ -480,7 +480,7 @@ function zoneToCoordinates(zone: CourtZone): { x: number; y: number } {
     mid_range_center:  [0.5,  0.28],
     left_corner_3:     [0.055, 0.08],
     right_corner_3:    [0.945,  0.08],
-    above_break_3:     [0.5,  0.36],
+    above_break_3:     [0.5,  0.35],
     backcourt:         [0.5,  0.6]
   };
   const zoneJitter: Record<string, [number, number]> = {
@@ -491,7 +491,7 @@ function zoneToCoordinates(zone: CourtZone): { x: number; y: number } {
     mid_range_center:  [0.1,  0.08],
     left_corner_3:     [0.025, 0.06],
     right_corner_3:    [0.025,  0.06],
-    above_break_3:     [0.46,  0.02],
+    above_break_3:     [0.48,  0.02],
     backcourt:         [0.3,  0.1]
   };
   let z: string = zone;
@@ -503,7 +503,7 @@ function zoneToCoordinates(zone: CourtZone): { x: number; y: number } {
   const jitter = (n: number, j: number) => n + (Math.random() * j * 2 - j);
   if (z === 'above_break_3') {
     const x = Math.min(Math.max(jitter(cx, zoneJitter[z][0] * (Math.random() * 0.8 + 0.2)), 0.01), 0.99);
-    const y = Math.min(Math.max(jitter(cy, zoneJitter[z][1]), 0.01), 0.99) - Math.abs(0.5 - x) * 0.2;
+    const y = Math.min(Math.max(jitter(cy, zoneJitter[z][1]), 0.01), 0.99) - Math.pow(Math.abs(0.5 - x), 2) * 0.65;
     return {x, y}
   }
   return { x: Math.min(Math.max(jitter(cx, zoneJitter[z][0]), 0.01), 0.99), y: Math.min(Math.max(jitter(cy, zoneJitter[z][1]), 0.01), 0.99) };
