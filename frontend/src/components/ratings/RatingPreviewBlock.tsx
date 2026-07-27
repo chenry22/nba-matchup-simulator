@@ -1,6 +1,6 @@
 import type { Player } from "../../sim/types";
 import { teamStyles } from "../TeamColors";
-import { getOverall, getRatings, getTopRatings } from "./Ratings";
+import { getOverall, getRatings } from "./Ratings";
 
 interface Props {
   p: Player;

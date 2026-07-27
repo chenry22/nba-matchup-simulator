@@ -1,4 +1,4 @@
-import type { GameState, PlayerStats, ShotAttempt, Team } from "../sim/types";
+import type { GameState, PlayerStats } from "../sim/types";
 
 interface Props {
   game: GameState;

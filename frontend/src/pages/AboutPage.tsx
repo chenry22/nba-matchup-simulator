@@ -1,14 +1,7 @@
-import type { CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function AboutPage() {
   const nav = useNavigate();
-
-  const buttonStyle: CSSProperties = {
-    color: 'white', background: 'darkblue',
-    cursor: 'pointer', padding: '12px 16px', borderRadius: '6px',
-    width: 'fit-content', margin: '0 auto', fontSize: '1.2rem'
-  };
 
   return (
     <div style={{ margin: '10% auto', maxWidth: '800px', width: '80%', padding: '36px 48px', background: 'white', color: 'black'}}>

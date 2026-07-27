@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getDocs, arrayUnion, collection, doc, getDoc, getFirestore, limit, orderBy, query, setDoc, startAt, updateDoc, where, collectionGroup } from "firebase/firestore";
+import { getDocs, arrayUnion, collection, doc, getDoc, getFirestore, limit, orderBy, query, setDoc, startAt, where, collectionGroup } from "firebase/firestore";
 import type { Player } from "../sim/types";
 
 // Your web app's Firebase configuration

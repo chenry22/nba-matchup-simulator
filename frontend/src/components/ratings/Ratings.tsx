@@ -128,9 +128,9 @@ export function getOverall(r: PlayerRating) {
 }
 
 export function getTopRatings(r: PlayerRating) {
-    let top = [];
-    let min = 0;
+    // let top = [];
+    // let min = 0;
 
     // TODO: show top ratings for players
-    return [{label: 'tmp', rating: 10}];
+    return [{label: 'tmp', rating: r.clutch}];
 }

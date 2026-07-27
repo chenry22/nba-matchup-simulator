@@ -1,6 +1,6 @@
 import { type Event, type GameState, type Player, type ShotType, type Team, type Turnover, type Pass, type CourtZone, ShotTypesForZone, type Foul, type ShotAttempt, type PlayerStats, type Rebound } from "./types";
 
-const TICK_SPEED = 500;
+// const TICK_SPEED = 500;
 
 const MAX_TIME_FOR_ASSIST = 4;
 
@@ -229,6 +229,9 @@ function resolveShotAttempt(shooter: Player, defender: Player, assister: Player 
   const shooterZoneSkill = zoneStats.skill + (assister ? zoneStats.ast_buff * 0.35 : 0);
   const astBuff = assister ? assister.ratings.playmaking.ast / 600 + assister.ratings.impact / 1000 : 0;
   const netOffBuff = (shooter.ratings.impact - defender.ratings.impact) / 1000;
+  
+  // soilly, idc
+  if (shotType) { }
 
   let shooterBaseSkill = Math.max(10, shooter.ratings.scoring.efficiency + ((shooter.ratings.scoring.overall - 50) / 5));
   let defenderZoneSkill = 0;
@@ -368,9 +371,9 @@ function passFromPlayer(players: Player[], passer: Player): Player {
 
 function simulateTurnoverChance(handler: Player, defenders: Player[], matchupIndex: number, passMatchupIndex: number = -1) : Turnover | null {
     // primary defender gets full steal rate combined w player TO rate
-    const toChance = handler.playmaking.tov_rate / 100;
+    // const toChance = handler.playmaking.tov_rate / 100;
     // const stealChance = defenders[matchupIndex].defense.pct_stl
-
+    if (handler && defenders && matchupIndex && passMatchupIndex) {}
     // if no steal, off-ball players have chance based on stl rate?
 
 
@@ -380,6 +383,8 @@ function simulateTurnoverChance(handler: Player, defenders: Player[], matchupInd
 function pickDefender(defenders: Player[], _zone: CourtZone, offenseIndex: number): Player {
   // TODO: Match by position/matchup for 5v5. For 1v1 always the one defender.
   if (defenders.length === 1) { return defenders[0]; }
+
+  if (offenseIndex) {}
 
   const ovrDefenseChange = 2.4;
   const sum = defenders.reduce((prev, curr) => prev + curr.ratings.defense.overall / ovrDefenseChange + defenseForZone(_zone, curr), 0);
@@ -589,6 +594,6 @@ function indexOfPlayer(stats: PlayerStats[], player: string) {
   return stats.findIndex(p => p.player === player);
 }
 
-function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+// function sleep(ms: number) {
+//   return new Promise(resolve => setTimeout(resolve, ms));
+// }
