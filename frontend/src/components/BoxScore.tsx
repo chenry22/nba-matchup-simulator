@@ -28,7 +28,7 @@ export default function BoxScore({ game }: Props) {
       <td>{s.tov}</td>
       {/* <td>FL</td> */}
       <td>{s.fgm}/{s.fga}</td>
-      <td>{shootingPct(s.fga, s.fgm)})</td>
+      <td>{shootingPct(s.fga, s.fgm)}</td>
       <td>{s.fg3m}/{s.fg3a}</td>
       <td>{shootingPct(s.fg3a, s.fg3m)}</td>
       <td>{s.ftm}/{s.fta}</td>

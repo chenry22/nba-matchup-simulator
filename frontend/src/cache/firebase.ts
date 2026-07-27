@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { addDoc, getDocs, arrayUnion, collection, doc, DocumentReference, getDoc, getFirestore, limit, orderBy, query, setDoc, startAt, updateDoc, where, collectionGroup } from "firebase/firestore";
+import { getDocs, arrayUnion, collection, doc, getDoc, getFirestore, limit, orderBy, query, setDoc, startAt, updateDoc, where, collectionGroup } from "firebase/firestore";
 import type { Player } from "../sim/types";
 
 // Your web app's Firebase configuration
@@ -40,7 +40,7 @@ export const cachePlayerData = async (data: Player) => {
         firstName: data.name.split(" ")[0].toLowerCase(),
         lastName: data.name.split(" ")[1].toLowerCase(),
         seasons: arrayUnion(data.season)
-    });
+    }, { merge: true });
     console.log(`Cached data at: player/${data.id}/season/${data.season}`)
 }
 

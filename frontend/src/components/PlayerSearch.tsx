@@ -22,18 +22,23 @@ export default function PlayerSearch({ onSelect }: Props) {
 
   return (
     <div>
-      <input
-        value={query}
-        placeholder="Search players..."
-        onChange={(e) => handleChange(e.target.value)}
-      />
-
       <div>
+        <input
+          value={query}
+          placeholder="Search for players..."
+          onChange={(e) => handleChange(e.target.value)}
+          style={{ fontSize: '0.6rem', padding: '2px 4px' }}
+        />
+        <span style={{ marginLeft: '8px', color: 'black', cursor: 'pointer' }} onClick={() => handleChange("")}>x</span>
+      </div>
+
+      <div style={{ marginTop: results.length > 0 ? '10px' : 0 }}>
         {results.map(player => (
           <div
             key={player.id}
             onClick={() => onSelect(player)}
-            style={{ cursor: "pointer", fontSize: "0.8rem" }}
+            className="hover-text"
+            style={{ cursor: "pointer", fontSize: "0.8rem", lineHeight: '1rem' }}
           >
             {player.firstName} {player.lastName}
           </div>

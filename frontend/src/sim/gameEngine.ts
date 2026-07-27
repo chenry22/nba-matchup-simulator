@@ -104,7 +104,7 @@ function simulatePossession(state: GameState, shotClock: number): Event[] {
   let passes = 0;
 
   // TODO: add functionality for dribbling up court -> chance for steal
-  let positionTime = Math.min(Math.floor(Math.random() * 4 + 4), state.shotClock);
+  let positionTime = Math.min(Math.floor(Math.random() * 3.9 + 3), state.shotClock);
   state.shotClock -= positionTime;
   state.periodClock -= positionTime;
   state.gameClock -= positionTime;
@@ -112,11 +112,12 @@ function simulatePossession(state: GameState, shotClock: number): Event[] {
   // passing until shot
   if (offense.roster.length > 1) {
     while (state.shotClock > 0) {
-      let pace = 1 / (ballHandler.tendencies.pace / 48 / 60);
-      let passTime = Math.floor(Math.random() * pace * 0.3 + 0.5);
+      let passTime = Math.floor(Math.random() * 5.8 + 1);
 
-      // TODO: rank by usage, lower usage players should tend to pass
-      let passChance = (ballHandler.tendencies.ast_rate / 5 + (ballHandler.playmaking.ast_rate / 120)) - (passes * 0.08) + (0.5 - ballHandler.tendencies.fga_rate) * 2;
+      // pass tendency positively affects passing, low shot tendency poasitively impacts
+      let passChance = ballHandler.ratings.playmaking.pass_tendency / 180 + 0.1
+        - (passes * 0.06) + (Math.max(0, 0.45 - ballHandler.ratings.shot_tendency / 100) * 0.7);
+        - (Math.max(0, ballHandler.ratings.shot_tendency / 100 - 0.65) * 0.7);
 
       if (state.shotClock - passTime > 0 && Math.random() < passChance) {
         passes++;
@@ -153,9 +154,7 @@ function simulatePossession(state: GameState, shotClock: number): Event[] {
   if (state.possession === "B") { y = 1 - y }
 
   // actual shot attempt
-  const pace = (1 / (ballHandler.tendencies.pace / 48 / 60));
-  const astPref = ballHandler.scoring.zones[zone].ast_fg_pct > ballHandler.scoring.zones[zone].uast_fg_pct;
-  let shotTime = Math.min(Math.floor(Math.random() * pace * (astPref ? 0.15 : 0.5) + 0.5), state.shotClock);
+  let shotTime = Math.min(Math.floor(Math.random() * (passFrom ? 1.6 : 2.8) * MAX_TIME_FOR_ASSIST + 0.8), state.shotClock);
   state.shotClock -= shotTime;
   state.periodClock -= shotTime;
   state.gameClock -= shotTime;
@@ -166,7 +165,7 @@ function simulatePossession(state: GameState, shotClock: number): Event[] {
     let ftm = 0;
     let fta = ["left_corner_3", "right_corner_3", "above_break_3", "backcourt"].includes(zone) ? 3 : 2;
     for (var i = 0; i < fta; i++) {
-      if (Math.random() < ballHandler.scoring.ft_pct) {
+      if (Math.random() < 0.5 + ballHandler.ratings.scoring.free_throw / 200) {
         ftm++;
       }
     }
@@ -223,138 +222,148 @@ function simulatePossession(state: GameState, shotClock: number): Event[] {
   return events;
 }
 
-function resolveShotAttempt(shooter: Player, defender: Player, assister: Player | null, zone: CourtZone, shotType: ShotType): { made: boolean; pts: 2 | 3; contestPct: number; blocked: boolean; stolen: boolean; } {
-  const zoneStats = shooter.scoring.zones[zone];
-  const shooterZoneSkill = Math.max(0, assister ? zoneStats.ast_fg_pct : zoneStats.uast_fg_pct);
-  const astBuff = assister ? assister.playmaking.ast_rate / 200 + Math.pow(assister.pie * 10, 2) / 100 : 0;
-  const defPieBuff = Math.pow(defender.pie * 10, 2) / 100;
-  const offPieBuff = Math.pow(shooter.pie * 10, 2) / 100;
 
-  let shooterBaseSkill = shooter.scoring.efg_pct;
+
+function resolveShotAttempt(shooter: Player, defender: Player, assister: Player | null, zone: CourtZone, shotType: ShotType): { made: boolean; pts: 2 | 3; contestPct: number; blocked: boolean; stolen: boolean; } {
+  const zoneStats = shooter.ratings.scoring.zones[zone];
+  const shooterZoneSkill = zoneStats.skill + (assister ? zoneStats.ast_buff * 0.35 : 0);
+  const astBuff = assister ? assister.ratings.playmaking.ast / 600 + assister.ratings.impact / 1000 : 0;
+  const netOffBuff = (shooter.ratings.impact - defender.ratings.impact) / 1000;
+
+  let shooterBaseSkill = Math.max(10, shooter.ratings.scoring.efficiency + ((shooter.ratings.scoring.overall - 50) / 5));
   let defenderZoneSkill = 0;
   let pts: 2 | 3 = 2;
   if (zone === "mid_range") { 
-    defenderZoneSkill = defender.defense.mid_range.pct_plusmin; 
+    defenderZoneSkill = defender.ratings.defense.mid_range; 
   }  else if (zone === "restricted_area") { 
-    defenderZoneSkill = defender.defense.restricted_area.pct_plusmin; 
+    defenderZoneSkill = defender.ratings.defense.restricted_area;
   } else if (zone === "paint_non_ra") { 
-    defenderZoneSkill = defender.defense.paint_non_ra.pct_plusmin; 
+    defenderZoneSkill = defender.ratings.defense.paint_non_ra; 
   } else { 
-    defenderZoneSkill = defender.defense.three.pct_plusmin;
-    shooterBaseSkill = shooter.scoring.fg3_pct;
+    defenderZoneSkill = defender.ratings.defense.three; 
+    shooterBaseSkill *= (0.3 + (shooter.ratings.scoring.three / 100) * 0.7);
     pts = 3;
   }
 
-  defenderZoneSkill = defenderZoneSkill / 60; // plus minus avg for shot type
-  const overallDefense = defender.defense.overall / 100; // percentage diff for all shots on average
-
   // how much taller is defender
-  let heightDiff = ((parseInt(defender.height.split("-")[0]) * 12) + parseInt(defender.height.split("-")[1])) 
+  const heightDiff = ((parseInt(defender.height.split("-")[0]) * 12) + parseInt(defender.height.split("-")[1])) 
     - ((parseInt(shooter.height.split("-")[0]) * 12) + parseInt(shooter.height.split("-")[1]));
-  let blockChance = ((defender.defense.blk_per100 / 24) + (shooter.scoring.blka_per100 / 80)) + (heightDiff * 0.004) - overallDefense;
-  let stealChance = (defender.defense.stl_per100 / 24) + (shooter.playmaking.tov_rate / 300) - (heightDiff * 0.002) - overallDefense;
+  let blockChance = (defender.ratings.defense.blk / 390) + (heightDiff * 0.0025) + 0.01;
+  let stealChance = (defender.ratings.defense.stl / 320) - (shooter.ratings.playmaking.tov / 500) - (heightDiff * 0.004) + 0.01;
 
   const threeAttempt = zone === "above_break_3" || zone === "left_corner_3" || zone === "right_corner_3";
   if (threeAttempt) {
-    blockChance *= 0.45;
+    blockChance *= 0.4;
     stealChance *= 0.25;
   }
-  const weightBuff = zone === 'restricted_area' || zone === 'paint_non_ra' ? (parseInt(shooter.weight) - parseInt(defender.weight)) * 0.006 : 0;
+  const weightBuff = zone === 'restricted_area' || zone === 'paint_non_ra' ? (parseInt(shooter.weight) - parseInt(defender.weight)) * 0.002 : 0;
   if (weightBuff > 0) {
     blockChance -= weightBuff / 2;
   }
-  if (Math.random() < blockChance + defPieBuff) {
+  if (Math.random() < blockChance - netOffBuff * 0.6) {
     return { made: false, pts, contestPct: 1, blocked: true, stolen: false }
   }
-  if (Math.random() < stealChance + defPieBuff) {
+  if (Math.random() < stealChance - netOffBuff * 0.8) {
     return { made: false, pts, contestPct: 0, blocked: false, stolen: true }
   }
 
-  // net rating diff should impact contest Pct, on scale of -10 to 10, taking into account defense skill for that zone
-  const contestRange = 6;
-  const contestSkill = -(defenderZoneSkill * 18) - overallDefense + (heightDiff * 0.008);
-  let contestPct = (Math.random() * (threeAttempt ? 0.7 : 1) *
-    (Math.max(-contestRange, Math.min(contestRange, contestSkill)) + contestRange)) / (contestRange * 2);
+  const defContestAbility = defender.ratings.defense.overall / 400 + defenderZoneSkill / 200 + (heightDiff * 0.006);
+  const contestPct = Math.min(1, Math.random() * (threeAttempt ? 0.8 : 1) * defContestAbility);
 
-  const avgShotPct = shooterZoneSkill > 0 ? (shooterZoneSkill + shooterBaseSkill) / 2 : shooterBaseSkill;
-  const shooterBuff = threeAttempt ? shooterBaseSkill * 0.5 : shooterBaseSkill * 0.35;
-  const shotOffenseChance = avgShotPct + (Math.random() * shooterBuff);
-  const shotChance = shotOffenseChance - (contestPct / 2.1) + overallDefense + astBuff + weightBuff + offPieBuff;
+  const shotMakeSkill = (shooterBaseSkill * 0.54 + shooterZoneSkill * 0.6) / 100 * (threeAttempt ? 0.8 : 1);
+  const shotChance = shotMakeSkill - (contestPct / 2) + astBuff + weightBuff + netOffBuff;
   const made = shotChance > Math.random();
 
   // console.log('-');
-  // console.log(shooter.name, defender.name, weightBuff);
-  // console.log(`Shooter: ${shooterBaseSkill}, ${shooterZoneSkill}, ${avgShotPct}, ${shotOffenseChance}`)
-  // console.log(`Defender: ${overallDefense}, ${defenderZoneSkill}, ${contestSkill}`)
-  // console.log("contest: " + contestPct + ", chance: " + shotChance + ", ast: " + astBuff);
+  // console.log(shooter.name, defender.name, weightBuff, heightDiff, zone);
+  // console.log(`Shooter: ${shooterBaseSkill}, ${shooterZoneSkill}, ${shotMakeSkill}, ${astBuff}, ${netOffBuff}`)
+  // console.log(`Defender: ${defContestAbility}, ${defenderZoneSkill}`)
+  // console.log("contest: " + contestPct + ", chance: " + shotChance);
   return { made, pts, contestPct, blocked: false, stolen: false };
 }
 
 function resolveRebound(offPlayers: Player[], defPlayers: Player[]): { player: Player; offensive: boolean } {
+  const weightedSelect = (ps: any[]) => {
+    const sum = ps.reduce((prev, curr) => prev + curr.score, 0);
+    var choice = Math.random();
+    for (const p of ps) {
+      if (choice < p.score / sum) {
+        return p;
+      }
+      choice -= p.score / sum;
+    }
+    return undefined;
+  };
+
   let sortedOff = offPlayers.map(p => 
     ({ player: p, height: p.height, weight: p.weight,
-      score: Math.random() * p.rebounding.c_rb_pct * p.rebounding.oreb_pct * p.rebounding.oreb_to_dreb * 1.5 
-        + p.rebounding.oreb_per100 / 20 + Math.pow(p.pie * 10, 2) / 100 })
-  ).sort((a, b) => a.score - b.score);
+      contested: p.ratings.rebounding.contested_rebounding,
+      score: (p.ratings.rebounding.oreb * 0.2 + p.ratings.impact * 0.1) / 100 })
+  ).sort((a, b) => b.score - a.score);
+
   let sortedDef = defPlayers.map(p => 
     ({ player: p, height: p.height, weight: p.weight,
-      score: Math.random() * p.rebounding.c_rb_pct * p.rebounding.dreb_pct * 1.5 
-        + p.rebounding.dreb_per100 / 30 + Math.pow(p.pie * 10, 2) / 100 })
-  ).sort((a, b) => a.score - b.score);
+      contested: p.ratings.rebounding.contested_rebounding,
+      score: (p.ratings.rebounding.dreb * 0.4 + p.ratings.impact * 0.2) / 100 })
+  ).sort((a, b) => b.score - a.score);
 
-  const fallback = sortedDef[Math.floor(Math.random() * sortedDef.length)];
   while (sortedOff.length > 0 && sortedDef.length > 0) {
-    let poppedDef = sortedDef.pop()!;
-    let poppedOff = sortedOff.pop()!;
+    var poppedOff = weightedSelect(sortedOff);
+    var poppedDef = weightedSelect(sortedDef);
+    sortedOff = sortedOff.filter(p => p !== poppedOff);
+    sortedDef = sortedDef.filter(p => p !== poppedDef);
 
     const heightDiff = ((parseInt(poppedDef.height.split("-")[0]) * 12) + parseInt(poppedDef.height.split("-")[1])) 
       - ((parseInt(poppedOff.height.split("-")[0]) * 12) + parseInt(poppedOff.height.split("-")[1]));
     const weightDiff = (parseInt(poppedDef.weight) - parseInt(poppedOff.weight));
-    poppedOff.score -= (heightDiff / 180) + (weightDiff / 1200);
-    poppedDef.score += (heightDiff / 180) + (weightDiff / 1200);
-    // console.log(poppedOff, poppedDef);
+    poppedOff.score -= (heightDiff / 220) + (weightDiff / 1500);
+    poppedDef.score += (heightDiff / 220) + (weightDiff / 1500);
 
-    if (poppedOff.score > poppedDef.score) {
-      if (Math.random() < poppedOff.score) {
-        return { player: poppedOff.player, offensive: true };
-      }
-      if (Math.random() < poppedDef.score) {
-        return { player: poppedDef.player, offensive: false };
-      }
-    } else {
-      if (Math.random() < poppedDef.score) {
-        return { player: poppedDef.player, offensive: false };
-      }
-      if (Math.random() < poppedOff.score) {
-        return { player: poppedOff.player, offensive: true };
-      }
+    const o = poppedOff.score * (Math.max(0.5 + poppedOff.contested / 200, Math.random()));
+    const d = poppedDef.score * (Math.max(0.5 + poppedOff.contested / 200, Math.random()))
+    const choice = Math.random();
+    if (choice < d) {
+      return { player: poppedDef.player, offensive: false };
+    }
+    if (choice < o) {
+      return { player: poppedOff.player, offensive: true };
     }
   }
-  return { player: fallback.player, offensive: false };
+  
+  return { player: defPlayers[Math.floor(Math.random() * defPlayers.length)], offensive: false };
 }
 
 
 
 function pickPlayer(players: Player[]): Player {
     // Go by usage, default to max usage player
-    const sorted = players.sort((a, b) => b.tendencies.usg - a.tendencies.usg);
-    for (var p of sorted) {
-      if (Math.random() < p.tendencies.usg) {
+    const sum = players.reduce((prev, curr) => prev + curr.ratings.usage + 5, 0);
+    const sorted = players.sort((a, b) => b.ratings.usage - a.ratings.usage);
+    
+    var choice = Math.random();
+    for (const p of sorted) {
+      if (choice < (p.ratings.usage + 5) / sum) {
         return p;
       }
+      choice -= (p.ratings.usage + 5) / sum;
     }
-    return sorted[Math.floor(Math.random() * sorted.length)];
+    return sorted[0];
 }
 function passFromPlayer(players: Player[], passer: Player): Player {
-    // Go by usage, default to max usage player
-    let sorted = players.filter(p => p != passer);
-    sorted = sorted.sort((a, b) => b.tendencies.usg - a.tendencies.usg);
-    for (var p of sorted) {
-        if (Math.random() < p.tendencies.usg) {
-            return p;
-        }
+    // Go by usage + shot tend, default to max usage player
+    const ps = players.filter(p => p !== passer);
+    const sum = ps.reduce((prev, curr) => prev + curr.ratings.usage + curr.ratings.shot_tendency * 2, 0);
+    const sorted = ps.sort((a, b) => b.ratings.usage - a.ratings.usage);
+    
+    var choice = Math.random();
+    for (const p of sorted) {
+      const rating = p.ratings.usage + p.ratings.shot_tendency * 2;
+      if (choice < rating / sum) {
+        return p;
+      }
+      choice -= rating / sum;
     }
-    return sorted[Math.floor(Math.random() * sorted.length)];
+    return sorted[0];
 }
 
 function simulateTurnoverChance(handler: Player, defenders: Player[], matchupIndex: number, passMatchupIndex: number = -1) : Turnover | null {
@@ -370,28 +379,32 @@ function simulateTurnoverChance(handler: Player, defenders: Player[], matchupInd
 
 function pickDefender(defenders: Player[], _zone: CourtZone, offenseIndex: number): Player {
   // TODO: Match by position/matchup for 5v5. For 1v1 always the one defender.
-  const sorted = defenders.sort((b, a) => 
-    (a.defense.blk_per100 + a.defense.stl_per100 - defenseForZone(_zone, a)) - 
-      (b.defense.blk_per100 + b.defense.stl_per100 - defenseForZone(_zone, b))
-  );
-  for (var i = 0; i < sorted.length; i++) {
-    let p = sorted[i];
-    if (Math.random() < ((0.5 - defenseForZone(_zone, p) / 20)
-      * ((sorted.length - i) / sorted.length))) {
+  if (defenders.length === 1) { return defenders[0]; }
+
+  const ovrDefenseChange = 2.4;
+  const sum = defenders.reduce((prev, curr) => prev + curr.ratings.defense.overall / ovrDefenseChange + defenseForZone(_zone, curr), 0);
+  const sorted = defenders.sort((b, a) => (a.ratings.defense.overall / ovrDefenseChange + defenseForZone(_zone, a)) - 
+      (b.ratings.defense.overall / ovrDefenseChange + defenseForZone(_zone, b)));
+// console.log(sorted.map(a => a.name + ", " + (a.ratings.defense.overall / 3 + defenseForZone(_zone, a)) / sum ))
+  var select = Math.random();
+  for (const p of sorted) {
+    let chunk = p.ratings.defense.overall / ovrDefenseChange + defenseForZone(_zone, p);
+    if (select < chunk / sum) {
         return p;
     }
+    select -= chunk / sum; 
   }
-  return sorted[Math.floor(Math.random() * sorted.length)];
+  return sorted[0];
 }
 function defenseForZone(zone: CourtZone, defender: Player): number {
   if (zone === "mid_range") { 
-    return defender.defense.mid_range.pct_plusmin; 
+    return defender.ratings.defense.mid_range;
   }  else if (zone === "restricted_area") { 
-    return defender.defense.restricted_area.pct_plusmin; 
+    return defender.ratings.defense.restricted_area;
   } else if (zone === "paint_non_ra") { 
-    return defender.defense.paint_non_ra.pct_plusmin; 
+    return defender.ratings.defense.paint_non_ra;
   } else { 
-    return defender.defense.three.pct_plusmin;
+    return defender.ratings.defense.three;
   }
 }
 
@@ -399,23 +412,25 @@ function defenseForZone(zone: CourtZone, defender: Player): number {
 function pickShotZone(player: Player): CourtZone {
   const threeRateMult = player.tendencies.fg3a_rate / player.tendencies.fga_rate;
   const tendencies: {type: CourtZone, freq: number}[] = [
-    { type: "restricted_area", freq: player.scoring.zones.restricted_area.freq },
-    { type: "paint_non_ra", freq: player.scoring.zones.paint_non_ra.freq },
-    { type: "mid_range", freq: player.scoring.zones.mid_range.freq },
-    { type: "left_corner_3", freq: player.scoring.zones.left_corner_3.freq * threeRateMult },
-    { type: "right_corner_3", freq: player.scoring.zones.right_corner_3.freq * threeRateMult },
-    { type: "above_break_3", freq: player.scoring.zones.above_break_3.freq * threeRateMult },
-    { type: "backcourt", freq: player.scoring.zones.backcourt.freq },
+    { type: "restricted_area", freq: player.ratings.scoring.zones.restricted_area.tendency * 0.5 },
+    { type: "paint_non_ra", freq: player.ratings.scoring.zones.paint_non_ra.tendency * 0.5 },
+    { type: "mid_range", freq: player.ratings.scoring.zones.mid_range.tendency * 0.5 },
+    { type: "left_corner_3", freq: player.ratings.scoring.zones.left_corner_3.tendency / 2 * threeRateMult },
+    { type: "right_corner_3", freq: player.ratings.scoring.zones.right_corner_3.tendency * 0.5 * threeRateMult },
+    { type: "above_break_3", freq: player.ratings.scoring.zones.above_break_3.tendency * 0.5 * threeRateMult }
   ];
 
-  tendencies.sort((a, b) => b.freq - a.freq);
-  for (let i = 0; i < tendencies.length; i++) {
-    if (Math.random() < tendencies[i].freq + ((tendencies.length - i) * 0.01)) {
-      return tendencies[i].type;
+  const sum = tendencies.reduce((prev, curr) => prev + curr.freq, 0);
+  const sorted = tendencies.sort((a, b) => b.freq - a.freq);
+  let choice = Math.random();
+
+  for (var p of sorted) {
+    if (choice < p.freq / sum) {
+      return p.type;
     }
+    choice -= p.freq / sum;
   }
-  // fallback to random from top 2
-  return tendencies[Math.floor(Math.random() * 3)].type;
+  return sorted[0].type;
 }
 
 function pickShotType(player: Player, _zone: CourtZone): ShotType {
@@ -457,12 +472,14 @@ function pickShotType(player: Player, _zone: CourtZone): ShotType {
 
 function estimateFoulProbability(shooter: Player, defender: Player, zone: CourtZone): number {
   // TODO: Use shooter.scoring.ft_rate + shotType (drives draw more fouls)
-  const ft_draw = (shooter.scoring.ft_rate + shooter.scoring.fl_pct) / 2;
-  const fl_chance = defender.defense.fl_pct / 3;
-  const ratingDiff = shooter.scoring.off_rating > 0 && defender.defense.def_rating > 0 ? shooter.scoring.off_rating - defender.defense.def_rating : 0;
-  const baseChance = (ft_draw + fl_chance) / 4 + (ratingDiff / 200);
-  return ['above_break_3', 'left_corner_3', 'right_corner_three'].includes(zone) ? baseChance * 0.3 : baseChance;
+  const ft_draw = (shooter.ratings.scoring.draw_foul + shooter.ratings.impact / 4 - defender.ratings.defense.fl / 2) / 400;
+  const baseChance = ft_draw + 0.06;
+  return ['above_break_3', 'left_corner_3', 'right_corner_three'].includes(zone) ? baseChance * 0.4 : baseChance;
 }
+
+
+
+
 
 /**
  * Maps a CourtZone to normalized (x, y) coordinates for shot chart rendering.
@@ -473,7 +490,7 @@ function estimateFoulProbability(shooter: Player, defender: Player, zone: CourtZ
  */
 function zoneToCoordinates(zone: CourtZone): { x: number; y: number } {
   const centers: Record<string, [number, number]> = {
-    restricted_area:   [0.5,  0.1],
+    restricted_area:   [0.5,  0.11],
     paint_non_ra:      [0.5,  0.18],
     mid_range_left:    [0.25, 0.2],
     mid_range_right:   [0.75,  0.2],
@@ -484,8 +501,8 @@ function zoneToCoordinates(zone: CourtZone): { x: number; y: number } {
     backcourt:         [0.5,  0.6]
   };
   const zoneJitter: Record<string, [number, number]> = {
-    restricted_area:   [0.05,  0.06],
-    paint_non_ra:      [0.1,  0.12],
+    restricted_area:   [0.08,  0.06],
+    paint_non_ra:      [0.12,  0.12],
     mid_range_left:    [0.07, 0.1],
     mid_range_right:   [0.07,  0.1],
     mid_range_center:  [0.1,  0.08],
@@ -508,6 +525,9 @@ function zoneToCoordinates(zone: CourtZone): { x: number; y: number } {
   }
   return { x: Math.min(Math.max(jitter(cx, zoneJitter[z][0]), 0.01), 0.99), y: Math.min(Math.max(jitter(cy, zoneJitter[z][1]), 0.01), 0.99) };
 }
+
+
+
 
 
 function applyEvents(state: GameState, toLog: Event[]) {

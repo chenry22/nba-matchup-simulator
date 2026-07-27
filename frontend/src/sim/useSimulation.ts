@@ -10,6 +10,7 @@ export function useSimulation() {
     const result = simulateGame(teamA, teamB, settings.periods, settings.periodLength * 60, settings.shotClockLength);
     setGame(result);
   }
+  function clearGame() { setGame(null) }
 
-  return { game, runSim, settings, setSettings };
+  return { game, clearGame, runSim, settings, setSettings };
 }

@@ -17,6 +17,10 @@ async def get_active_player_ids():
     for p in active: ids.append(p['id'])
     return ids
 
+@router.get("/season/{season}")
+async def search_players(season: str):
+    return nba.get_players_from_season(season)
+
 @router.get("/search")
 async def search_players(q: str = Query(..., min_length=2)):
     """

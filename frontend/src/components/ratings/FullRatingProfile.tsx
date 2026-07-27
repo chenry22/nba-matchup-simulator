@@ -21,11 +21,11 @@ export default function FullRatingProfile({ showRatingProfile, setRatingProfileO
         width: '100%', height: '100%', top: 0, left: 0
     }} onClick={() => setRatingProfileOverlay(undefined)}>
         <div style={style} onClick={(e) => e.stopPropagation()}>
-        <RatingsBlock p={showRatingProfile}></RatingsBlock>
+            <RatingsBlock p={showRatingProfile}></RatingsBlock>
+            <span style={{ position: 'absolute', top: '0', right: '0', fontSize: '1.4rem', lineHeight: '1.6rem', fontWeight: 'bold',
+                padding: '4px 10px', cursor: 'pointer', color: 'black'
+            }} onClick={() => setRatingProfileOverlay(undefined)}
+            >x</span>
         </div>
-        <span style={{ position: 'absolute', top: '2dvh', right: '15%', fontSize: '1.3rem', lineHeight: '1.5rem', fontWeight: 'bold',
-            backgroundColor: 'darkblue', borderRadius: '24px', padding: '6px 12px', cursor: 'pointer', color: 'white'
-        }} onClick={() => setRatingProfileOverlay(undefined)}
-        >x</span>
     </div>
 }

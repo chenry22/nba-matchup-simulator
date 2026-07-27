@@ -35,9 +35,8 @@ export default function RatingsBlock({ p } : Props) {
 
   return <div style={{ margin: '4px' }}>
       <div style={styles.row}>
-        <img style={{ objectFit: 'contain', maxHeight: '200px', minWidth: '24dvw', 
-          width: '60%', maxWidth: '260px' 
-        }} src={`https://cdn.nba.com/headshots/nba/latest/260x190/${p.id}.png`}></img>
+        <img style={{ objectFit: 'contain', width: '12rem' }} 
+          src={`https://cdn.nba.com/headshots/nba/latest/520x380/${p.id}.png`}></img>
         <div>
           <h2>{p.name} ({p.season})</h2> 
           <div>
@@ -56,6 +55,7 @@ export default function RatingsBlock({ p } : Props) {
             { ratingNumBlock(ratings.scoring.three, "3PT") }
             { ratingNumBlock(ratings.defense.overall, "DEFENSE") }
             { ratingNumBlock(ratings.shot_tendency, "SHOT TENDENCY") }
+            { ratingNumBlock(ratings.usage, "USAGE") }
           </div>
         </div>
       </div>
@@ -82,6 +82,7 @@ export default function RatingsBlock({ p } : Props) {
           <div style={{...styles.row, flexWrap: 'wrap' }}>
             { ratingNumBlock(ratings.playmaking.ast, "ASSIST") }
             { ratingNumBlock(ratings.playmaking.tov, "TOV PREVENT") }
+            { ratingNumBlock(ratings.playmaking.pass_tendency, "PASS TENDENCY") }
           </div>
         </div>
         <div style={{...styles.col, justifyContent: 'left'}}>
@@ -133,7 +134,6 @@ export default function RatingsBlock({ p } : Props) {
               { ratingNumBlock(ratings.scoring.zones.left_corner_3.tendency, "LEFT CORNER 3") }
               { ratingNumBlock(ratings.scoring.zones.right_corner_3.tendency, "RIGHT CORNER 3") }
               { ratingNumBlock(ratings.scoring.zones.above_break_3.tendency, "ABOVE BREAK 3") }
-              { ratingNumBlock(ratings.playmaking.ast_rate, "PASS RATE") }
           </div>
         </div>
       </div>
@@ -144,6 +144,6 @@ const styles: Record<string, CSSProperties> = {
   container: {
     width: '100dvw', height: '100dvh', display: 'flex', flexDirection: 'column'
   },
-  row: { display: 'flex', gap: '12px' },
-  col: { display: 'flex', flexDirection: 'column', gap: '10px' },
+  row: { display: 'flex', gap: '0.5rem' },
+  col: { display: 'flex', flexDirection: 'column', gap: '0.4rem' },
 }

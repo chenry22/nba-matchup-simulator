@@ -4,7 +4,7 @@ export type Position = "PG" | "SG" | "SF" | "PF" | "C";
 export type EventType = "shot" | "pass" | "rebound" | "turnover" | "foul";
 
 export type CourtZone = "restricted_area" | "paint_non_ra" | "mid_range" |
-  "left_corner_3" | "right_corner_3" | "above_break_3" | "backcourt";
+  "left_corner_3" | "right_corner_3" | "above_break_3";
 export type ShotType = "tip_shot" | "bank_shot" | "layup" | "jump_shot" | 
   "hook_shot" | "alley_oop" | "finger_roll" | "fadeaway" | "dunk";
 export const ShotTypesForZone = {
@@ -96,7 +96,7 @@ export interface Player {
   ratings: PlayerRating,
 }
 export interface PlayerRating {
-  impact: number, shot_tendency: number
+  impact: number, shot_tendency: number, usage: number,
   scoring: {
     overall: number, efficiency: number, three: number,
     zones: {
@@ -119,7 +119,7 @@ export interface PlayerRating {
     contested_rebounding: number, oreb: number, dreb: number,
   },
   playmaking: {
-    ast: number, tov: number, ast_rate: number
+    ast: number, tov: number, pass_tendency: number
   },
   clutch: {
     end_three: number, end_buff: number, end_ft: number,

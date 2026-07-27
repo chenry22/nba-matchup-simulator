@@ -6,7 +6,7 @@ interface Props {
 }
 
 export default function CourtView({ events }: Props) {
-  const width = window.innerWidth * 0.48;
+  const width = window.innerWidth * (window.innerWidth < 690 ? 0.85 : 0.46);
   const height = width * 0.54;
   const MADE_SHOT_SIZE = 4;
   const MISSED_SHOT_SIZE = 4;

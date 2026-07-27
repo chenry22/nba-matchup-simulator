@@ -1,5 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Jersey+20&display=swap');
+
 :root {
-  --text: #6b6375;
+  --text: #554f5b;
   --text-h: #08060d;
   --bg: #000000;
   --border: #e5e4e7;
@@ -11,11 +13,11 @@
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --sans: "Jersey 20", system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: "Jersey 20", system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
-  font: 18px/145% var(--sans);
+  font: 24.5px/110% var(--sans);
   letter-spacing: 0.18px;
   color-scheme: light dark;
   color: var(--text);
@@ -130,4 +132,22 @@ code {
   padding: 2px 4px;
   text-align: center;
   border: 1px solid gray;
+}
+
+.hover-text:hover {
+  opacity: 0.8
+}
+
+.hover-pop {
+  transition: transform 0.2s ease-in-out;
+}
+.hover-pop:hover {
+  transform: translate(2px, -2px);
+}
+
+@media (max-width: 720px) {
+  .mobile-wrap {
+    flex-direction: column;
+    align-items: center !important;
+  }
 }

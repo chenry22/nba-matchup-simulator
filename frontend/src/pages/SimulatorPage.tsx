@@ -10,10 +10,17 @@ import StatHighlights from "../components/StatHighlights";
 import RatingPreviewBlock from "../components/ratings/RatingPreviewBlock";
 import PlayerIndex from "../components/PlayerIndex";
 import FullRatingProfile from "../components/ratings/FullRatingProfile";
+import { getOverall, getRatings } from "../components/ratings/Ratings";
+import { useNavigate } from "react-router-dom";
 
 export default function SimulatorPage() {
-  const [teamA, setTeamA] = useState<Team>({ name: "Team A", color: "red", rosterSelect: [], roster: [], stats: []});
-  const [teamB, setTeamB] = useState<Team>({ name: "Team B", color: "blue", rosterSelect: [], roster: [], stats: []});
+  const [teamA, setTeamA] = useState<Team>({ name: "Team A", color: '#af1e1e', rosterSelect: [], roster: [], stats: []});
+  const [teamB, setTeamB] = useState<Team>({ name: "Team B", color: '#2735b1', rosterSelect: [], roster: [], stats: []});
+  
+  const [playerIndex, setPlayerIndex] = useState<Record<string, Player[]>>({});
+  const [playerIndexSeason, setPlayerIndexSeason] = useState<string>("2025-26");
+  const [playerIndexTeamFilter, setPlayerIndexTeamFilter] = useState<string>("");
+  const [playerIndexPosFilter, setPlayerIndexPosFilter] = useState<string>("");
 
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState<'teamBuilder' | 'simulator' | 'players'>('teamBuilder');
@@ -21,7 +28,8 @@ export default function SimulatorPage() {
   const [showRatingProfile, setRatingProfileOverlay] = useState<Player | undefined>(undefined);
   const [showBoxScore, setShowBoxScore] = useState(false);
 
-  const { game, runSim, settings, setSettings } = useSimulation();
+  const { game, clearGame, runSim, settings, setSettings } = useSimulation();
+  const nav = useNavigate();
 
   const loadRosterStats = async (players: PlayerSelect[]) => {
     let playerObjs = await Promise.all(
@@ -31,13 +39,6 @@ export default function SimulatorPage() {
           console.log("Found cached data.");
           return cached as Player;
         }
-        // let data = await getPlayerData(player.id, player.selectedSeason);
-        // if(data) {
-        //   let p = data.data as Player; 
-        //   p.ratings = getRatings(p);
-        //   cachePlayerData(p);
-        //   return p;
-        // }
         return undefined;
       })  
     );
@@ -69,9 +70,12 @@ export default function SimulatorPage() {
     var [teamAStats, teamBStats] = await Promise.all(
       [ loadRosterStats(teamA.rosterSelect), loadRosterStats(teamB.rosterSelect) ]
     );
+    clearGame();
     setLoading(false);
     teamAStats = teamAStats.filter(p => p !== undefined);
     teamBStats = teamBStats.filter(p => p !== undefined);
+    teamAStats.forEach(p => p.ratings = getRatings(p));
+    teamBStats.forEach(p => p.ratings = getRatings(p));
 
     setTeamA({ ...teamA, roster: teamAStats, stats: teamAStats.map(p => emptyStats(p.name)) });
     setTeamB({ ...teamB,  roster: teamBStats, stats: teamBStats.map(p => emptyStats(p.name)) });
@@ -88,39 +92,34 @@ export default function SimulatorPage() {
   return (
     <div style={styles.container}>
       <div style={{ display: 'flex', gap: '20px', margin: '10px 16px 0' }}>
+        <div onClick={() => nav('/')} style={{ color: 'white', alignSelf: 'center', marginLeft: '20px', cursor: 'pointer' }}>⌂ Home</div>
         <div style={tab === 'teamBuilder' ? styles.activeTab : styles.tab} onClick={() => setTab('teamBuilder')}>Build Teams</div>
         <div style={tab === 'simulator' ? styles.activeTab : styles.tab} onClick={() => setTab('simulator')}>Simulate</div>
         <div style={tab === 'players' ? styles.activeTab : styles.tab} onClick={() => setTab('players')}>Player Index</div>
       </div>
 
-      { tab === 'players' &&
-        <div style={styles.page}>
-          <PlayerIndex/>
-        </div>
-      }
+      <div style={{...styles.page, display: tab === 'players' ? 'block' : 'none'}}>
+        <PlayerIndex players={playerIndex} setPlayers={setPlayerIndex} 
+          season={playerIndexSeason} setSeason={setPlayerIndexSeason}
+          teamFilter={playerIndexTeamFilter} setTeamFilter={setPlayerIndexTeamFilter}
+          posFilter={playerIndexPosFilter} setPosFilter={setPlayerIndexPosFilter}/>
+      </div>
 
       { tab === 'teamBuilder' && 
         <div style={styles.page}>
           <h2 style={{ fontWeight: 'bold' }}>Build Teams</h2>
 
-          <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
-            <div>
-              <h3>Team A</h3>
-              <TeamBuilder team={teamA} setTeam={setTeamA}/>
-            </div>
-
-            <div>
-              <h3>Team B</h3>
-              <TeamBuilder team={teamB} setTeam={setTeamB}/>
-            </div>
+          <div className="mobile-wrap" style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+            <TeamBuilder team={teamA} setTeam={setTeamA}/>
+            <TeamBuilder team={teamB} setTeam={setTeamB}/>
           </div>
 
           { loading ? 
             <p>Loading...</p>
           :
-            <button onClick={loadRosters} style={styles.button}>
+            <div onClick={loadRosters} style={styles.button}>
               Load Rosters
-            </button>
+            </div>
           }
         </div>
       }
@@ -132,57 +131,63 @@ export default function SimulatorPage() {
             <div style={styles.ratingPreviews}>
               <h2>{teamA.name}</h2>
               <div style={styles.horizontalScroll}>
-                { teamA.roster.map(p => <RatingPreviewBlock p={p} setRatingProfileOverlay={() => setRatingProfileOverlay(p)}/>)}
+                { teamA.roster.sort((a, b) => getOverall(b.ratings) - getOverall(a.ratings)).map(p => <RatingPreviewBlock p={p} setRatingProfileOverlay={() => setRatingProfileOverlay(p)}/>)}
               </div>
             </div>
-            <div style={{height: '20px' }}></div>
+            <div style={{height: '14px' }}></div>
             <div style={styles.ratingPreviews}>
               <h2>{teamB.name}</h2>
               <div style={styles.horizontalScroll}>
-                { teamB.roster.map(p => <RatingPreviewBlock p={p} setRatingProfileOverlay={() => setRatingProfileOverlay(p)}/>)}
+                { teamB.roster.sort((a, b) => getOverall(b.ratings) - getOverall(a.ratings)).map(p => <RatingPreviewBlock p={p} setRatingProfileOverlay={() => setRatingProfileOverlay(p)}/>)}
               </div>
             </div>
             </>
           }
 
-          <div style={{...styles.row, marginTop: '24px', justifyContent: 'center'}}>
+          <div style={{...styles.row, marginTop: '24px', justifyContent: 'center', color: 'darkblue' }}>
             <div style={styles.row}>
               <span>Periods</span>
               <input type="number" defaultValue={settings.periods} id="periods"
-                min={1} max={4}
+                min={1} max={4} style={{fontSize: '0.7rem', padding: '2px 4px'}}
                 onChange={(e) => setSettings({...settings, periods: parseInt(e.target.value)})}
               ></input>
             </div>
             <div style={styles.row}>
               <span>Period Length (minutes)</span>
               <input type="number" defaultValue={settings.periodLength} id="period-length"
-                min={1} max={12}
+                min={1} max={12} style={{fontSize: '0.7rem', padding: '2px 4px'}}
                 onChange={(e) => setSettings({...settings, periodLength: parseInt(e.target.value)})}
               ></input>
             </div>
             <div style={styles.row}>
               <span>Shot Clock (seconds)</span>
               <input type="number" defaultValue={settings.shotClockLength} id="shot-clock"
-                min={6} max={30}
+                min={6} max={30} style={{fontSize: '0.7rem', padding: '2px 4px'}}
                 onChange={(e) => setSettings({...settings, shotClockLength: parseInt(e.target.value)})}
               ></input>
             </div>
           </div>
-          <div style={{...styles.button, fontSize: '1.2rem', fontWeight: 'bold', padding: '10px 20px', margin: '14px auto' }} onClick={() => {
+          <div style={{...styles.button, fontSize: '1.2rem', fontWeight: 'bold', padding: '10px 20px', margin: '14px auto 36px' }} onClick={() => {
+            if (teamA.roster.length === 0 || teamB.roster.length === 0) { 
+              alert("Build your teams in the 'Build Teams' tab! When you're finished, load the player profiles with the 'Load Rosters' button");
+              return;
+            }
             setTeamA({ ...teamA, stats: teamA.stats.map(p => emptyStats(p.player)) });
             setTeamB({ ...teamB, stats: teamB.stats.map(p => emptyStats(p.player)) });
             runSim(teamA, teamB);
           }}>Simulate</div>
 
           { game && 
-            <div style={{ display: 'flex',  gap: '10px', justifyContent: 'center', alignItems: 'center' }}>
-              <div style={{ flexBasis: '50%' }}>  
+            <div style={{ display: 'flex',  gap: '14px', justifyContent: 'center', alignItems: 'start' }}
+              className="mobile-wrap"
+            >
+              <div style={{ flexBasis: '52%' }}>  
                 <StatHighlights game={game}/>
                 <div style={{...styles.button, marginTop: '14px'}}
                   onClick={() => setShowBoxScore(true)}
                 >View Box Score</div>
               </div>
-              <div style={{display: 'flex', flexDirection: 'column', gap: '14px', flexBasis: '50%', flexShrink: '1' }}>
+              <div style={{display: 'flex', flexDirection: 'column', gap: '14px', flexBasis: '48%', flexShrink: '1' }}>
                 <CourtView events={game.events} />
                 <PlayByPlay events={game.events} teams={[game.teamA, game.teamB]} />
               </div>
@@ -210,6 +215,7 @@ export default function SimulatorPage() {
   );
 }
 
+const bgColor = '#fffefa';
 const styles: Record<string, CSSProperties> = {
   container: {
     width: '100dvw', height: '100dvh', display: 'flex', flexDirection: 'column'
@@ -226,27 +232,27 @@ const styles: Record<string, CSSProperties> = {
 
   button: { 
     color: 'white', background: '#240b55', 
-    padding: '2px 10px', fontSize: '0.7rem', width: 'fit-content',
-    margin: '2px auto', cursor: 'pointer'
+    padding: '2px 10px', fontSize: '0.8rem', width: 'fit-content',
+    margin: '16px auto', cursor: 'pointer'
   },
 
   activeTab : {
-    background: '#fff8ea',
+    background: bgColor,
     padding: '12px 16px', cursor: 'pointer', color: 'black',
   },
   tab: {
-    background: '#fff8ea', opacity: 0.8,
+    background: bgColor, opacity: 0.8,
     padding: '12px 16px', cursor: 'pointer',
   },
 
   page: {
-    background: '#fff8ea', margin: '0 16px 16px', flexGrow: '10', padding: '14px'
+    background: bgColor, margin: '0 16px 16px', flexGrow: '10', padding: '14px'
   },
 
   ratingsPreview: {
 
   },
   horizontalScroll: {
-    overflowX: 'auto', display: 'flex', gap: '10px'
+    overflowX: 'auto', display: 'flex', gap: '10px', padding: '4px 4px'
   }
 };

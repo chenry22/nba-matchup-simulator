@@ -10,6 +10,7 @@ from nba_api.stats.static import players, teams
 from nba_api.stats.endpoints import (
     playergamelog,
     commonplayerinfo,
+    leaguedashplayerstats,
     playercareerstats,
     playerdashboardbygeneralsplits,
     playerdashboardbyshootingsplits,
@@ -66,6 +67,11 @@ class NBAService:
 
     def get_active_players(self) -> list[dict]:
         return players.get_active_players()
+
+    def get_players_from_season(self, season: str) -> list[int]:
+        players = leaguedashplayerstats.LeagueDashPlayerStats(season=season, rank="N").get_data_frames()[0]
+        players = players["PLAYER_ID"].tolist()
+        return players
 
     def search(self, query: str) -> list[dict]:
         """

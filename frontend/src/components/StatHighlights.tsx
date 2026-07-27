@@ -1,10 +1,13 @@
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import type { GameState, PlayerStats, ShotAttempt, Team } from "../sim/types";
 
 interface Props { game: GameState; }
 
 export default function StatHighlights({ game }: Props) {
   const headerStyle = { fontSize: '1.3rem', marginTop: '0px', fontWeight: 'bold', marginBottom: '10px' };
+
+  const [aOffset, setAOffset] = useState(0);
+  const [bOffset, setBOffset] = useState(0);
 
   function scoreForPeriod(period: number, team: Team) {
     return game.events.reduce((prev, curr) => {
@@ -35,7 +38,7 @@ export default function StatHighlights({ game }: Props) {
 
   function playerBlock(s: PlayerStats, id: number, season: string, color: string) {
     const labelStyle: CSSProperties = { fontSize: '0.7rem', opacity: '0.7', margin: '0 8px 0 4px' };
-    return <div key={id} style={{ display: 'flex', gap: '12px', justifyContent: 'stretch', 
+    return <div key={id + "-" + season + s.player} style={{ display: 'flex', gap: '12px', justifyContent: 'stretch', 
         padding: '10px', background: 'white', border: '1px solid gray'
     }}>
       <img style={{ maxWidth: '20%', maxHeight: '20dvh', objectFit: 'contain' }} src={`https://cdn.nba.com/headshots/nba/latest/260x190/${id}.png`}></img>
@@ -62,9 +65,11 @@ export default function StatHighlights({ game }: Props) {
             <div>{scoreForPeriod(period + 1, game.teamB)}</div>
           </div>
         )}
-        <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'center', padding: '0 8px', fontWeight: 'bold' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'center', padding: '0 12px', 
+          fontWeight: 'bold', color: 'black', fontSize: '1.3rem'
+        }}>
           <div>{game.score[0]}</div>
-          <div style={{margin: '4px 0', borderBottom: '1px solid gray', width: '100%' }}></div>
+          <div style={{margin: '4px 0', borderBottom: '1px solid gray', width: '140%' }}></div>
           <div>{game.score[1]}</div>
         </div>
       </div>
@@ -74,19 +79,41 @@ export default function StatHighlights({ game }: Props) {
         gap: '20px', marginTop: '20px'
       }}>
         <div>
-          <div style={{...headerStyle, color: game.teamA.color}}>{game.teamA.name} <span style={{ fontSize: '0.8rem', opacity: '0.6', marginLeft: '4px'}}>(Top Performers)</span></div>
+          <div style={{...headerStyle, color: game.teamA.color, width: '100%'}}>
+            {game.teamA.name} <span style={{ fontSize: '0.8rem', opacity: '0.6', marginLeft: '4px'}}>(Top Performers)</span>
+            
+            <span style={{ color: 'black', fontSize: '1rem', float: 'right', userSelect: 'none' }}>
+              <span 
+                onClick={() => setAOffset(aOffset - 2)}
+                style={{ color: aOffset > 0 ? 'black' : 'lightgray', cursor: 'pointer' }}>&larr;</span>
+              <span 
+                onClick={() => setAOffset(aOffset + 2)}
+                style={{ color: aOffset < game.teamA.roster.length - 2 ? 'black' : 'lightgray', cursor: 'pointer' }}>&rarr;</span>
+            </span>
+          </div>
           <div style={{ display: 'flex', justifyContent: 'stretch', flexDirection: 'column', gap: '4px' }}>
-            { game.teamA.stats.sort((a, b) => gamescore(b) - gamescore(a)).slice(0, 2).map(s => {
+            { game.teamA.stats.sort((a, b) => gamescore(b) - gamescore(a)).slice(aOffset, aOffset + 2).map(s => {
                 const p = game.teamA.roster.find(p => p.name === s.player);
                 return playerBlock(s, p?.id ?? 0, p?.season ?? "", game.teamA.color);
             })}
           </div>
         </div>
 
-        <div>
-          <div style={{...headerStyle, color: game.teamB.color}}>{game.teamB.name} <span style={{ fontSize: '0.8rem', opacity: '0.6', marginLeft: '4px'}}>(Top Performers)</span></div>
+        <div style={{ width: '100%' }}>
+          <div style={{...headerStyle, color: game.teamB.color}}>
+            {game.teamB.name} <span style={{ fontSize: '0.8rem', opacity: '0.6', marginLeft: '4px'}}>(Top Performers)</span>
+
+            <span style={{ color: 'black', fontSize: '1rem', float: 'right', userSelect: 'none' }}>
+              <span 
+                onClick={() => setBOffset(bOffset - 2)}
+                style={{ color: bOffset > 0 ? 'black' : 'lightgray', cursor: 'pointer' }}>&larr;</span>
+              <span 
+                onClick={() => setBOffset(bOffset + 2)}
+                style={{ color: bOffset < game.teamB.roster.length - 2 ? 'black' : 'lightgray', cursor: 'pointer' }}>&rarr;</span>
+            </span>
+          </div>
           <div style={{ display: 'flex', justifyContent: 'stretch', flexDirection: 'column', gap: '4px' }}>
-            { game.teamB.stats.sort((a, b) => gamescore(b) - gamescore(a)).slice(0, 2).map(s => {
+            { game.teamB.stats.sort((a, b) => gamescore(b) - gamescore(a)).slice(bOffset, bOffset + 2).map(s => {
                 const p = game.teamB.roster.find(p => p.name === s.player);
                 return playerBlock(s, p?.id ?? 0, p?.season ?? "", game.teamB.color);
             })}
