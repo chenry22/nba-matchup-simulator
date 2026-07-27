@@ -5,7 +5,7 @@ import AboutPage from "./pages/AboutPage";
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/nba-matchup-simulator">
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
