@@ -33,13 +33,13 @@ export default function PlayByPlay({ events, teams }: Props) {
 
   function getShotDefenseCaption(shot: Event) {
     const s = shot as ShotAttempt;
-    const defStyle = { fontSize: '0.65rem', lineHeight: '0.5rem', fontWeight: 'normal' }
+    const defStyle = { fontSize: '0.65rem', lineHeight: '0.6rem', fontWeight: 'normal' }
     if (s.blocked) {
-      return <span style={{...defStyle, fontSize: '0.7rem', lineHeight: '0.7rem', 
+      return <span style={{...defStyle, fontSize: '0.9rem', lineHeight: '0.9rem', 
         fontWeight: 'bold', color: s.defended_by.team.color 
       }}>Blocked by {s.defended_by.name}</span>
     } else {
-      return <span style={{...defStyle, opacity: s.contest_pct * 0.7 + 0.5, color: 'black' }}>
+      return <span style={{...defStyle, opacity: s.contest_pct * 0.6 + 0.5, color: 'black' }}>
         {Math.round(s.contest_pct * 10000) / 100}% contested by <span style={{ opacity: 1, color: s.defended_by.team.color}}>{s.defended_by.name}</span>
       </span>
     }
@@ -55,17 +55,19 @@ export default function PlayByPlay({ events, teams }: Props) {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', 
-          alignItems: 'start', gap: '10px', borderLeft: '1px solid gray', 
+          alignItems: 'start', gap: '0.25rem', borderLeft: '1.8px solid #a6a6a6', 
           paddingLeft: '10px', marginBottom: '6px'
         }}>
-          <div style={{ fontSize: '0.8rem', lineHeight: '0.9rem', 
+          <div style={{ fontSize: '0.9rem', lineHeight: '0.9rem', 
             color: shot.player.team.color, fontWeight: shot.made ? 'bold' : 'normal',
             opacity: shot.made ? 1 : 0.7
           }}>
             {shot.player.name} {shot.made ? "makes " : "misses "} {shot.shot.points}pt {shot.shot.type.trim()}
           </div>
           { shot.assisted_by && shot.made &&  
-            <div style={{ fontSize: '0.7rem', lineHeight: '0.6rem', opacity: 1, color: 'black' }}>Assist by <span style={{color: shot.assisted_by.team.color}}>{shot.assisted_by.name}</span></div>
+            <div style={{ fontSize: '0.8rem', lineHeight: '0.8rem', 
+              color: '#2f2f2f', marginBottom: '0.2rem', marginLeft: '1rem'
+            }}>Assist by <span style={{color: shot.assisted_by.team.color}}>{shot.assisted_by.name}</span></div>
           }
           {getShotDefenseCaption(shot)}
         </div>
@@ -81,10 +83,17 @@ export default function PlayByPlay({ events, teams }: Props) {
       </div>
     } else if (play.type === 'rebound') {
       const reb = play as Rebound;
-      return <div style={{ fontSize: '0.65rem', lineHeight: '0.7rem' }}>
+      return <div style={reb.offensive ? { fontSize: '0.8rem', lineHeight: '0.8rem' }
+          : { fontSize: '0.65rem', lineHeight: '0.7rem' }
+        }>
         Q{play.period} ({timestampString(play.timestamp)})
         <span style={{ opacity: 0.6, margin: '0 10px'}}>|</span>
-        <span style={{ fontWeight: reb.offensive ? 'bold' : 'normal', color: reb.offensive ? reb.player.team.color : 'inherit' }}>
+        <span style={{ 
+          fontSize: reb.offensive ? '0.9rem' : 'inherit', 
+          lineHeight: reb.offensive ? '1rem' : 'inherit',
+          fontWeight: reb.offensive ? 'bold' : 'normal',
+          color: reb.offensive ? reb.player.team.color : 'inherit' 
+        }}>
           {reb.offensive ? "Offensive rebound " : "Defensive rebound "} by <span style={{color: reb.player.team.color}}>{reb.player.name}</span>
         </span>
       </div>
@@ -97,10 +106,10 @@ export default function PlayByPlay({ events, teams }: Props) {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', 
-          alignItems: 'start', gap: '10px', borderLeft: '1px solid gray', 
+          alignItems: 'start', gap: '0.2rem', borderLeft: '1px solid gray', 
           paddingLeft: '10px', marginBottom: '6px'
         }}>
-          <div style={{ fontSize: '0.8rem', lineHeight: '0.9rem' }}>
+          <div style={{ fontSize: '0.9rem', lineHeight: '0.9rem' }}>
             <span style={{ color: fl.player.team.color }}>{fl.player.name}</span> fouled by <span style={{ color: fl.fouled_by.team.color }}>{fl.fouled_by.name}</span> on a {fl.shot.points}pt {fl.shot.type.trim()} attempt
           </div>
           <div style={{ color: fl.player.team.color, fontSize: '0.7rem', lineHeight: '0.7rem'}}>
@@ -111,11 +120,11 @@ export default function PlayByPlay({ events, teams }: Props) {
     } else if (play.type === 'turnover') {
       const tov = play as Turnover;
       const stolen_by = tov.stolen_by;
-      return <div style={{ fontSize: '0.65rem', lineHeight: '0.6rem' }}>
+      return <div style={{ fontSize: '0.8rem' }}>
         Q{play.period} ({timestampString(play.timestamp)})
         <span style={{ opacity: 0.6, margin: '0 10px'}}>|</span>
         { stolen_by ? 
-          <span style={{ fontSize: '0.8rem', lineHeight: '1rem', color: stolen_by.team.color,
+          <span style={{ fontSize: '0.9rem', lineHeight: '0.9rem', color: stolen_by.team.color,
             fontWeight: 'bold'
           }}>
             {stolen_by.name} steals the ball from <span style={{ color: tov.player.team.color, fontWeight: 'normal' }}>{tov.player.name}</span>
@@ -129,10 +138,10 @@ export default function PlayByPlay({ events, teams }: Props) {
 
   return (
     <div style={{ flexGrow: 20, flexBasis: '80%', backgroundColor: 'white', padding: '8px 14px', marginBottom: '36px' }}>
-      <p style={{ margin: 0, padding: 0 }}><b>Play-by-Play</b></p>
+      <p style={{ margin: '0 0 12px', padding: 0, color: 'black', fontSize: '1.4rem' }}><b>Play-by-Play</b></p>
       <div style={{ maxHeight: '48dvh', overflowY: "auto", display: 'flex', flexDirection: 'column' }}>
         { events.map((play, i) => (
-          <div key={i} style={{ borderBottom: '1px solid lightgray', paddingBottom: '8px', margin: '4px 2px'}}>
+          <div key={i} style={{ borderBottom: '1px solid lightgray', paddingBottom: '8px', margin: '0.3rem 2px'}}>
             {getPlayCaption(play)}
           </div>
         ))}

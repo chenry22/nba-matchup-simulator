@@ -17,7 +17,7 @@
   --heading: "Jersey 20", system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
-  font: 24.5px/110% var(--sans);
+  font: 24px/100% var(--sans);
   letter-spacing: 0.18px;
   color-scheme: light dark;
   color: var(--text);
@@ -28,7 +28,7 @@
   -moz-osx-font-smoothing: grayscale;
 
   @media (max-width: 1024px) {
-    font-size: 16px;
+    font-size: 20px;
   }
 }
 
@@ -145,7 +145,7 @@ code {
   transform: translate(2px, -2px);
 }
 
-@media (max-width: 720px) {
+@media (max-width: 780px) {
   .mobile-wrap {
     flex-direction: column;
     align-items: center !important;

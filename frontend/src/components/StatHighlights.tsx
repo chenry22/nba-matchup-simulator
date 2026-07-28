@@ -37,15 +37,19 @@ export default function StatHighlights({ game }: Props) {
   }
 
   function playerBlock(s: PlayerStats, id: number, season: string, color: string) {
-    const labelStyle: CSSProperties = { fontSize: '0.7rem', opacity: '0.7', margin: '0 8px 0 4px' };
+    const labelStyle: CSSProperties = { fontSize: '0.7rem', opacity: '0.7', margin: '0 0.5rem 0 0.14rem' };
     return <div key={id + "-" + season + s.player} style={{ display: 'flex', gap: '12px', justifyContent: 'stretch', 
-        padding: '10px', background: 'white', border: '1px solid gray'
+        padding: '10px', background: 'white', border: '1px solid gray', letterSpacing: '-0.002em'
     }}>
       <img style={{ maxWidth: '20%', maxHeight: '20dvh', objectFit: 'contain' }} src={`https://cdn.nba.com/headshots/nba/latest/260x190/${id}.png`}></img>
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', color: 'black', gap: '4px' }}>
         <div style={{ color, fontWeight: 'bold' }}>{s.player} <span style={{ fontSize: '0.6rem', fontWeight: 'normal', opacity: 0.8 }}>({season})</span></div>
         <div>{s.fgm * 2 + s.ftm + s.fg3m}<span style={labelStyle}>pts</span> {s.oreb + s.dreb}<span style={labelStyle}>reb ({s.oreb}o)</span> {s.ast}<span style={labelStyle}>ast</span> {s.blk}<span style={labelStyle}>blk</span> {s.stl}<span style={labelStyle}>stl</span></div>
-        <div>{s.fgm}/{s.fga}<span style={labelStyle}>fg ({shootingPct(s.fga, s.fgm)})</span> {s.fg3m}/{s.fg3a}<span style={labelStyle}>3p ({shootingPct(s.fg3a, s.fg3m)})</span> {s.ftm}/{s.fta}<span style={labelStyle}>ft ({shootingPct(s.fta, s.ftm)})</span></div>
+        <div style={{ display: 'flex', gap: '0', flexWrap: 'wrap'}}>
+          <span style={{ whiteSpace: 'nowrap' }}>{s.fgm}/{s.fga}<span style={labelStyle}>fg ({shootingPct(s.fga, s.fgm)})</span></span> 
+          <span style={{ whiteSpace: 'nowrap' }}>{s.fg3m}/{s.fg3a}<span style={labelStyle}>3p ({shootingPct(s.fg3a, s.fg3m)})</span></span> 
+          <span style={{ whiteSpace: 'nowrap' }}>{s.ftm}/{s.fta}<span style={labelStyle}>ft ({shootingPct(s.fta, s.ftm)})</span></span>
+        </div>
       </div>
     </div>;
   }

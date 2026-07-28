@@ -29,7 +29,7 @@ export default function RatingPreviewBlock({ p, setRatingProfileOverlay } : Prop
       <span style={{ whiteSpace: 'nowrap' }}>
         <span style={{ fontWeight: 'bold', color: `rgb(${5 * Math.max(0, 80 - ovr)}, ${Math.min(200, 3 * Math.max(0, ovr - 25))}, 80)` }}>{Math.round(ovr)} OVR</span>
         <span style={{...teamStyles[p.team], 
-            borderRadius: '8px', borderWidth: '1px', margin: ' 0 12px', padding: '3px 5px',
+            borderRadius: '8px', borderWidth: '1px', margin: ' 0 0.5rem', padding: '3px 5px',
             fontWeight: 'bold', fontSize: '0.7rem'
           }}>{p.team}</span>
         <span style={{ fontSize: '0.8rem'}}>{p.position.split("-").map(s => s[0]).join("-")}</span>

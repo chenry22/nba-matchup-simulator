@@ -6,7 +6,7 @@ import { loadPlayersFromSeason } from "../cache/firebase";
 import { getOverall, getRatings } from "./ratings/Ratings";
 import { teamStyles } from "./TeamColors";
 
-const availableSeasons = ['2025-26', '2024-25', '2023-24', '2022-23'];
+const availableSeasons = ['2025-26', '2024-25', '2023-24', '2022-23', '2021-22'];
 
 interface Props {
     players: Record<string, Player[]>,
@@ -39,11 +39,14 @@ export default function PlayerIndex({players, setPlayers, season, setSeason, tea
     useEffect(() => { loadPlayers() }, [season]);
 
     return <div style={{display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <div style={{display: 'flex', justifyContent: 'start', gap: "40px", flexWrap: 'wrap', rowGap: '10px'}}>
+        <div style={{display: 'flex', justifyContent: 'start', color: 'black',
+            gap: "1.8rem", flexWrap: 'wrap', rowGap: '10px'
+        }}>
             <div onClick={() => loadPlayers(true)} style={{ color: 'darkblue', cursor: 'pointer' }}>Refresh ⟳</div>
             <div>
                 <label>Season </label>
                 <select name="team-filter" defaultValue={season}
+                    style={{ padding: '0 2px' }}
                     onChange={(e) => setSeason(e.target.value)}
                 >
                     {availableSeasons.map(s => (
@@ -54,6 +57,7 @@ export default function PlayerIndex({players, setPlayers, season, setSeason, tea
             <div>
                 <label>Team </label>
                 <select name="team-filter" defaultValue={""}
+                    style={{ padding: '0 2px' }}
                     onChange={(e) => setTeamFilter(e.target.value)}
                 >
                     <option value={""}>All</option>
@@ -65,6 +69,7 @@ export default function PlayerIndex({players, setPlayers, season, setSeason, tea
             <div>
                 <label>Position </label>
                 <select name="pos-filter" defaultValue={""}
+                    style={{ padding: '0 2px' }}
                     onChange={(e) => setPosFilter(e.target.value)}
                 >
                     <option value={""}>All</option>

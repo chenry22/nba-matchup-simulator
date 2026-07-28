@@ -5,6 +5,7 @@ const MAX_RATING_OVR_BOOST = 100;
 
 export function getRatings(p: Player) : PlayerRating {
     const minsAdjust = Math.max(0.1, Math.min(1, Math.min(28, p.mins) / 24 * Math.min(45, p.gp) / 42));
+    const shotMinsAdjust = Math.min(1, Math.max(0.6, minsAdjust * 1.4));
     const getShotRating = (ast: number, uast: number, base: number, max: number) => {
         return Math.max(0.01, ast * 0.28 + uast * 0.72 - base) * 100 / (max - base);
     }
@@ -23,39 +24,39 @@ export function getRatings(p: Player) : PlayerRating {
             draw_foul: p.scoring.ft_rate * 100, // Math.max(0.001, p.scoring.fl_pct - 0.1) * 100 / 0.5,
             zones: {
                 restricted_area: { 
-                    skill: getShotRating(p.scoring.zones.restricted_area.ast_fg_pct, p.scoring.zones.restricted_area.uast_fg_pct, 0.34, 0.61)
+                    skill: getShotRating(p.scoring.zones.restricted_area.ast_fg_pct, p.scoring.zones.restricted_area.uast_fg_pct * shotMinsAdjust, 0.34, 0.61)
                         * Math.max(0.7, Math.min(0.35, p.scoring.zones.restricted_area.freq) / 0.35), 
                     ast_buff: Math.max(0, Math.min(0.35, p.scoring.zones.restricted_area.ast_fg_pct - p.scoring.zones.restricted_area.uast_fg_pct)) * 100 / 0.35,
                     tendency: p.scoring.zones.restricted_area.freq * 100 * 2
                 },
                 paint_non_ra: {
-                    skill: getShotRating(p.scoring.zones.paint_non_ra.ast_fg_pct, p.scoring.zones.paint_non_ra.uast_fg_pct, 0.34, 0.66)
+                    skill: getShotRating(p.scoring.zones.paint_non_ra.ast_fg_pct, p.scoring.zones.paint_non_ra.uast_fg_pct * shotMinsAdjust, 0.34, 0.66)
                         * Math.max(0.7, Math.min(0.24, p.scoring.zones.paint_non_ra.freq) / 0.24), 
                     ast_buff: Math.max(0, Math.min(0.4, p.scoring.zones.paint_non_ra.ast_fg_pct - p.scoring.zones.paint_non_ra.uast_fg_pct)) * 100 / 0.4,
                     tendency: p.scoring.zones.paint_non_ra.freq * 100 * 2
                 },
                 mid_range: {
-                    skill: getShotRating(p.scoring.zones.mid_range.ast_fg_pct, p.scoring.zones.mid_range.uast_fg_pct, 0.32, 0.66)
+                    skill: getShotRating(p.scoring.zones.mid_range.ast_fg_pct, p.scoring.zones.mid_range.uast_fg_pct * shotMinsAdjust, 0.32, 0.66)
                         * Math.max(0.7, Math.min(0.18, p.scoring.zones.mid_range.freq) / 0.18), 
                     ast_buff: Math.max(0, Math.min(0.4, p.scoring.zones.mid_range.ast_fg_pct - p.scoring.zones.mid_range.uast_fg_pct)) * 100 / 0.4,
                     tendency: p.scoring.zones.mid_range.freq * 100 * 2
                 },
                 left_corner_3: {
-                    skill: getShotRating(p.scoring.zones.left_corner_3.ast_fg_pct, p.scoring.zones.left_corner_3.uast_fg_pct, 0.16, 0.45)
+                    skill: getShotRating(p.scoring.zones.left_corner_3.ast_fg_pct, p.scoring.zones.left_corner_3.uast_fg_pct * shotMinsAdjust, 0.16, 0.45)
                         * Math.max(0.7, Math.min(0.1, p.scoring.zones.left_corner_3.freq) / 0.1)
                         * threeBoost, 
                     ast_buff: Math.max(0, Math.min(0.4, p.scoring.zones.left_corner_3.ast_fg_pct - p.scoring.zones.left_corner_3.uast_fg_pct)) * 100 / 0.4,
                     tendency: p.scoring.zones.left_corner_3.freq * 100 * 2
                 }, 
                 right_corner_3: {
-                    skill: getShotRating(p.scoring.zones.right_corner_3.ast_fg_pct, p.scoring.zones.right_corner_3.uast_fg_pct, 0.16, 0.45)
+                    skill: getShotRating(p.scoring.zones.right_corner_3.ast_fg_pct, p.scoring.zones.right_corner_3.uast_fg_pct * shotMinsAdjust, 0.16, 0.45)
                         * Math.max(0.7, Math.min(0.1, p.scoring.zones.right_corner_3.freq) / 0.1)
                         * threeBoost,
                     ast_buff: Math.max(0, Math.min(0.4, p.scoring.zones.right_corner_3.ast_fg_pct - p.scoring.zones.right_corner_3.uast_fg_pct)) * 100 / 0.4,
                     tendency: p.scoring.zones.right_corner_3.freq * 100 * 2
                 }, 
                 above_break_3: {
-                    skill: getShotRating(p.scoring.zones.above_break_3.ast_fg_pct, p.scoring.zones.above_break_3.uast_fg_pct, 0.2, 0.52)
+                    skill: getShotRating(p.scoring.zones.above_break_3.ast_fg_pct, p.scoring.zones.above_break_3.uast_fg_pct * shotMinsAdjust, 0.2, 0.52)
                         * Math.max(0.7, Math.min(0.28, p.scoring.zones.above_break_3.freq) / 0.28)
                         * threeBoost, 
                     ast_buff: Math.max(0, Math.min(0.4, p.scoring.zones.above_break_3.ast_fg_pct - p.scoring.zones.above_break_3.uast_fg_pct)) * 100 / 0.4,
@@ -64,7 +65,7 @@ export function getRatings(p: Player) : PlayerRating {
             }
         },
         defense: {
-            overall: (p.defense.overall - 8) * -100 / 16 * minsAdjust,
+            overall: Math.max(0, (p.defense.overall - 8) * -100 / 16 * minsAdjust),
             restricted_area: Math.min(0.01, p.defense.restricted_area.pct_plusmin - 5 + 0.001) * -100 / 14 * minsAdjust, 
             paint_non_ra: Math.min(0.01, p.defense.paint_non_ra.pct_plusmin - 4 + 0.001) * -100 / 12 * minsAdjust,
             mid_range: Math.min(0.01, p.defense.mid_range.pct_plusmin - 6 + 0.001) * -100 / 13 * minsAdjust, 
@@ -101,30 +102,32 @@ export function getRatings(p: Player) : PlayerRating {
 
 export function getOverall(r: PlayerRating) {
     return r.impact * 0.18 + r.scoring.overall * 0.12
-      + Math.min(MAX_RATING_OVR_BOOST, r.scoring.efficiency) * 0.1 
-      + r.scoring.three * 0.08 
-      + r.scoring.free_throw * 0.04 + r.scoring.draw_foul * 0.02
-      + r.scoring.zones.restricted_area.skill * 0.06 + r.scoring.zones.restricted_area.ast_buff * 0.012 + r.scoring.zones.paint_non_ra.skill * 0.05 + r.scoring.zones.paint_non_ra.ast_buff * 0.012
-      + r.scoring.zones.mid_range.skill * 0.06 + r.scoring.zones.mid_range.ast_buff * 0.012
-      + r.scoring.zones.left_corner_3.skill * 0.04 + r.scoring.zones.left_corner_3.ast_buff * 0.008 + r.scoring.zones.right_corner_3.skill * 0.04 + r.scoring.zones.right_corner_3.ast_buff * 0.008
-      + r.scoring.zones.above_break_3.skill * 0.05 + r.scoring.zones.above_break_3.ast_buff * 0.01
+      + Math.min(MAX_RATING_OVR_BOOST, r.scoring.efficiency) * 0.1
+      + r.scoring.three * 0.1
+      + r.scoring.free_throw * 0.03 + r.scoring.draw_foul * 0.02
+      + r.scoring.zones.restricted_area.skill * 0.064 + r.scoring.zones.restricted_area.ast_buff * 0.005
+      + r.scoring.zones.paint_non_ra.skill * 0.062 + r.scoring.zones.paint_non_ra.ast_buff * 0.005
+      + r.scoring.zones.mid_range.skill * 0.062 + r.scoring.zones.mid_range.ast_buff * 0.005
+      + r.scoring.zones.left_corner_3.skill * 0.032 + r.scoring.zones.left_corner_3.ast_buff * 0.002
+      + r.scoring.zones.right_corner_3.skill * 0.032 + r.scoring.zones.right_corner_3.ast_buff * 0.002
+      + r.scoring.zones.above_break_3.skill * 0.048 + r.scoring.zones.above_break_3.ast_buff * 0.004
       
       + r.defense.overall * 0.1
-      + Math.min(MAX_RATING_OVR_BOOST, r.defense.restricted_area) * 0.03 
+      + Math.min(MAX_RATING_OVR_BOOST, r.defense.restricted_area) * 0.032
       + Math.min(MAX_RATING_OVR_BOOST, r.defense.paint_non_ra) * 0.03
       + Math.min(MAX_RATING_OVR_BOOST, r.defense.mid_range) * 0.03 
       + Math.min(MAX_RATING_OVR_BOOST, r.defense.three) * 0.03
-      + r.defense.stl * 0.08
-      + Math.min(MAX_RATING_OVR_BOOST, r.defense.blk) * 0.07
+      + r.defense.stl * 0.07
+      + Math.min(MAX_RATING_OVR_BOOST, r.defense.blk) * 0.06
       + r.defense.fl * 0.02
 
-      + Math.min(MAX_RATING_OVR_BOOST, r.rebounding.contested_rebounding) * 0.04
-      + Math.min(MAX_RATING_OVR_BOOST, r.rebounding.oreb) * 0.1
-      + r.rebounding.dreb * 0.08
-      + r.playmaking.ast * 0.12 
+      + Math.min(MAX_RATING_OVR_BOOST, r.rebounding.contested_rebounding) * 0.06
+      + Math.min(MAX_RATING_OVR_BOOST, r.rebounding.oreb) * 0.09
+      + r.rebounding.dreb * 0.07
+      + r.playmaking.ast * 0.12
       + r.playmaking.tov * 0.08
-      + r.clutch.end_three * 0.01 + r.clutch.end_buff * 0.014 + r.clutch.end_ft * 0.003
-      + r.clutch.final_three * 0.006 + r.clutch.final_buff * 0.008 + r.clutch.final_ft * 0.002;
+      + r.clutch.end_three * 0.012 + r.clutch.end_buff * 0.016 + r.clutch.end_ft * 0.008
+      + r.clutch.final_three * 0.006 + r.clutch.final_buff * 0.008 + r.clutch.final_ft * 0.004;
 }
 
 export function getTopRatings(r: PlayerRating) {

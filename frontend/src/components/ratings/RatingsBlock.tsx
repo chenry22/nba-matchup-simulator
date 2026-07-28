@@ -38,7 +38,7 @@ export default function RatingsBlock({ p } : Props) {
         <img style={{ objectFit: 'contain', width: '12rem' }} 
           src={`https://cdn.nba.com/headshots/nba/latest/520x380/${p.id}.png`}></img>
         <div>
-          <h2>{p.name} ({p.season})</h2> 
+          <h2 style={{ fontSize: '1.4rem', lineHeight: '1.5rem' }}>{p.name} ({p.season})</h2> 
           <div>
             <span style={{...teamStyles[p.team], 
               borderRadius: '8px', borderWidth: '1px', marginRight: '8px', padding: '4px 6px',

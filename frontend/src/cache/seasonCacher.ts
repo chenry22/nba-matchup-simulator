@@ -50,7 +50,7 @@ const cachePlayerData = async (data: Player) => {
 
 async function main() {
     console.log("starting")
-    const szn = '2022-23';
+    const szn = '2021-22';
     const sznData = await getPlayerIdsForSeason(szn);
     const ids = sznData as number[];
     console.log("Found " + ids.length + " players");

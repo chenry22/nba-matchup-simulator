@@ -91,7 +91,7 @@ export default function SimulatorPage() {
 
   return (
     <div style={styles.container}>
-      <div style={{ display: 'flex', gap: '20px', margin: '10px 16px 0' }}>
+      <div style={{ display: 'flex', gap: '0.8rem', margin: '10px 16px 0' }}>
         <div onClick={() => nav('/')} style={{ color: 'white', alignSelf: 'center', marginLeft: '20px', cursor: 'pointer' }}>⌂ Home</div>
         <div style={tab === 'teamBuilder' ? styles.activeTab : styles.tab} onClick={() => setTab('teamBuilder')}>Build Teams</div>
         <div style={tab === 'simulator' ? styles.activeTab : styles.tab} onClick={() => setTab('simulator')}>Simulate</div>
@@ -129,14 +129,14 @@ export default function SimulatorPage() {
           { loading ? <div>Loading player profiles...</div>
             :  <>
             <div style={styles.ratingPreviews}>
-              <h2>{teamA.name}</h2>
+              <h2 style={{ color: teamA.color, margin: 0, fontSize: '1.4rem' }}>{teamA.name}</h2>
               <div style={styles.horizontalScroll}>
                 { teamA.roster.sort((a, b) => getOverall(b.ratings) - getOverall(a.ratings)).map(p => <RatingPreviewBlock p={p} setRatingProfileOverlay={() => setRatingProfileOverlay(p)}/>)}
               </div>
             </div>
-            <div style={{height: '14px' }}></div>
+            <div style={{height: '1rem' }}></div>
             <div style={styles.ratingPreviews}>
-              <h2>{teamB.name}</h2>
+              <h2 style={{ color: teamB.color, margin: 0, fontSize: '1.4rem' }}>{teamB.name}</h2>
               <div style={styles.horizontalScroll}>
                 { teamB.roster.sort((a, b) => getOverall(b.ratings) - getOverall(a.ratings)).map(p => <RatingPreviewBlock p={p} setRatingProfileOverlay={() => setRatingProfileOverlay(p)}/>)}
               </div>
@@ -144,30 +144,32 @@ export default function SimulatorPage() {
             </>
           }
 
-          <div style={{...styles.row, marginTop: '24px', justifyContent: 'center', color: 'darkblue' }}>
-            <div style={styles.row}>
+          <div style={{...styles.row, margin: '24px 20px 0', justifyContent: 'center', color: 'darkblue', 
+            gap: '1.6rem', flexWrap: 'wrap', rowGap: '10px'
+          }}>
+            <div style={styles.settingsRow}>
               <span>Periods</span>
               <input type="number" defaultValue={settings.periods} id="periods"
-                min={1} max={4} style={{fontSize: '0.7rem', padding: '2px 4px'}}
+                min={1} max={4} style={{fontSize: '0.7rem', padding: '2px'}}
                 onChange={(e) => setSettings({...settings, periods: parseInt(e.target.value)})}
               ></input>
             </div>
-            <div style={styles.row}>
-              <span>Period Length (minutes)</span>
+            <div style={styles.settingsRow}>
+              <span>Period Length (mins)</span>
               <input type="number" defaultValue={settings.periodLength} id="period-length"
-                min={1} max={12} style={{fontSize: '0.7rem', padding: '2px 4px'}}
+                min={1} max={12} style={{fontSize: '0.7rem', padding: '2px'}}
                 onChange={(e) => setSettings({...settings, periodLength: parseInt(e.target.value)})}
               ></input>
             </div>
-            <div style={styles.row}>
-              <span>Shot Clock (seconds)</span>
+            <div style={styles.settingsRow}>
+              <span>Shot Clock (s)</span>
               <input type="number" defaultValue={settings.shotClockLength} id="shot-clock"
-                min={6} max={30} style={{fontSize: '0.7rem', padding: '2px 4px'}}
+                min={6} max={30} style={{fontSize: '0.7rem', padding: '2px'}}
                 onChange={(e) => setSettings({...settings, shotClockLength: parseInt(e.target.value)})}
               ></input>
             </div>
           </div>
-          <div style={{...styles.button, fontSize: '1.2rem', fontWeight: 'bold', padding: '10px 20px', margin: '14px auto 36px' }} onClick={() => {
+          <div style={{...styles.button, fontSize: '1.2rem', fontWeight: 'bold', padding: '10px 20px', margin: '20px auto 36px' }} onClick={() => {
             if (teamA.roster.length === 0 || teamB.roster.length === 0) { 
               alert("Build your teams in the 'Build Teams' tab! When you're finished, load the player profiles with the 'Load Rosters' button");
               return;
@@ -183,7 +185,7 @@ export default function SimulatorPage() {
             >
               <div style={{ flexBasis: '52%' }}>  
                 <StatHighlights game={game}/>
-                <div style={{...styles.button, marginTop: '14px'}}
+                <div style={{...styles.button, fontSize: '1rem', padding: '10px 12px', marginTop: '14px'}}
                   onClick={() => setShowBoxScore(true)}
                 >View Box Score</div>
               </div>
@@ -220,7 +222,8 @@ const styles: Record<string, CSSProperties> = {
   container: {
     width: '100dvw', height: '100dvh', display: 'flex', flexDirection: 'column'
   },
-  row: { display: 'flex', gap: '10px' },
+  row: { display: 'flex', gap: '10px', alignItems: 'center' },
+  settingsRow: { display: 'flex', gap: '0.4rem', alignItems: 'center', whiteSpace: 'nowrap' },
   col: { display: 'flex', flexDirection: 'column', gap: '10px' },
   overlayBg : {
     display: 'flex', flexDirection: 'column',
@@ -253,6 +256,6 @@ const styles: Record<string, CSSProperties> = {
 
   },
   horizontalScroll: {
-    overflowX: 'auto', display: 'flex', gap: '10px', padding: '4px 4px'
+    overflowX: 'auto', display: 'flex', gap: '10px', padding: '6px 8px'
   }
 };
