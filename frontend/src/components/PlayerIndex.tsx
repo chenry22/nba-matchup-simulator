@@ -6,7 +6,7 @@ import { loadPlayersFromSeason } from "../cache/firebase";
 import { getOverall, getRatings } from "./ratings/Ratings";
 import { teamStyles } from "./TeamColors";
 
-const availableSeasons = ['2025-26', '2024-25', '2023-24', '2022-23', '2021-22'];
+const availableSeasons = ['2025-26', '2024-25', '2023-24', '2022-23', '2021-22', '2020-21'];
 
 interface Props {
     players: Record<string, Player[]>,

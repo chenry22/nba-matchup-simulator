@@ -33,12 +33,12 @@ export default function RatingsBlock({ p } : Props) {
 
   const ratings = getRatings(p);
 
-  return <div style={{ margin: '4px' }}>
+  return <div style={{ margin: '0px' }}>
       <div style={styles.row}>
-        <img style={{ objectFit: 'contain', width: '12rem' }} 
+        <img style={{ objectFit: 'contain', width: '12rem', maxWidth: '45%' }} 
           src={`https://cdn.nba.com/headshots/nba/latest/520x380/${p.id}.png`}></img>
-        <div>
-          <h2 style={{ fontSize: '1.4rem', lineHeight: '1.5rem' }}>{p.name} ({p.season})</h2> 
+        <div style={{ color: 'darkslategray' }}>
+          <h2 style={{ fontSize: '1.4rem', lineHeight: '1.5rem', color: 'black' }}>{p.name} ({p.season})</h2> 
           <div>
             <span style={{...teamStyles[p.team], 
               borderRadius: '8px', borderWidth: '1px', marginRight: '8px', padding: '4px 6px',
@@ -144,6 +144,6 @@ const styles: Record<string, CSSProperties> = {
   container: {
     width: '100dvw', height: '100dvh', display: 'flex', flexDirection: 'column'
   },
-  row: { display: 'flex', gap: '0.5rem' },
+  row: { display: 'flex', gap: '0.4rem' },
   col: { display: 'flex', flexDirection: 'column', gap: '0.4rem' },
 }

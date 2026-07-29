@@ -88,7 +88,7 @@ export default function StatHighlights({ game }: Props) {
             
             <span style={{ color: 'black', fontSize: '1rem', float: 'right', userSelect: 'none' }}>
               <span 
-                onClick={() => setAOffset(aOffset - 2)}
+                onClick={() => setAOffset(Math.max(0, aOffset - 2))}
                 style={{ color: aOffset > 0 ? 'black' : 'lightgray', cursor: 'pointer' }}>&larr;</span>
               <span 
                 onClick={() => setAOffset(aOffset + 2)}
@@ -109,7 +109,7 @@ export default function StatHighlights({ game }: Props) {
 
             <span style={{ color: 'black', fontSize: '1rem', float: 'right', userSelect: 'none' }}>
               <span 
-                onClick={() => setBOffset(bOffset - 2)}
+                onClick={() => setBOffset(Math.max(bOffset - 2, 0))}
                 style={{ color: bOffset > 0 ? 'black' : 'lightgray', cursor: 'pointer' }}>&larr;</span>
               <span 
                 onClick={() => setBOffset(bOffset + 2)}

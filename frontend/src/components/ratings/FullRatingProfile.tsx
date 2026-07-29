@@ -10,8 +10,8 @@ interface Props {
 export default function FullRatingProfile({ showRatingProfile, setRatingProfileOverlay } : Props) {
     const style: CSSProperties = {
         display: 'flex', flexDirection: 'column',
-        padding: '20px 32px', margin: '4dvh auto', 
-        background: 'white', height: '86dvh', position: 'relative',
+        padding: '20px 32px', margin: '6dvh auto', 
+        background: 'white', height: '84dvh', position: 'relative',
         justifyContent: 'left', textAlign: 'left', gap: '2px', 
         overflowY: 'auto',
         width: '70%', maxWidth: '700px'

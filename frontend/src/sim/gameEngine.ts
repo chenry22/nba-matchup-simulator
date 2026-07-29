@@ -232,7 +232,9 @@ function resolveShotAttempt(shooter: Player, defender: Player, assister: Player 
   // soilly, idc
   if (shotType) { }
 
-  let shooterBaseSkill = Math.max(10, (shooter.ratings.scoring.efficiency / 1.6) + ((shooter.ratings.scoring.overall - 40) / 3));
+  let shooterBaseSkill = Math.max(10, 
+    (shooter.ratings.scoring.efficiency / 1.6) + ((Math.pow(shooter.ratings.scoring.overall, 2) - 1600) / 360)
+  );
   let defenderZoneSkill = 0;
   let pts: 2 | 3 = 2;
   if (zone === "mid_range") { 
@@ -243,15 +245,14 @@ function resolveShotAttempt(shooter: Player, defender: Player, assister: Player 
     defenderZoneSkill = defender.ratings.defense.paint_non_ra; 
   } else { 
     defenderZoneSkill = defender.ratings.defense.three; 
-    shooterBaseSkill *= (0.25 + (shooter.ratings.scoring.three / 100) * 0.6);
+    shooterBaseSkill *= (0.22 + (shooter.ratings.scoring.three / 100) * 0.64);
     pts = 3;
   }
 
   // how much taller is defender
-  const heightDiff = ((parseInt(defender.height.split("-")[0]) * 12) + parseInt(defender.height.split("-")[1])) 
-    - ((parseInt(shooter.height.split("-")[0]) * 12) + parseInt(shooter.height.split("-")[1]));
-  let blockChance = (defender.ratings.defense.blk / 390) + (heightDiff * 0.0024) + 0.01;
-  let stealChance = (defender.ratings.defense.stl / 320) - (shooter.ratings.playmaking.tov / 500) - (heightDiff * 0.004) + 0.01;
+  const heightDiff = heightInches(defender.height) - heightInches(shooter.height);
+  let blockChance = Math.max((defender.ratings.defense.blk / 390) + (heightDiff * 0.002), 0.01);
+  let stealChance = Math.max((defender.ratings.defense.stl / 320) - (shooter.ratings.playmaking.tov / 500) - (heightDiff * 0.004), 0.01);
 
   const threeAttempt = zone === "above_break_3" || zone === "left_corner_3" || zone === "right_corner_3";
   if (threeAttempt) {
@@ -262,18 +263,18 @@ function resolveShotAttempt(shooter: Player, defender: Player, assister: Player 
   if (weightBuff > 0) {
     blockChance -= weightBuff / 2;
   }
-  if (Math.random() < blockChance - netOffBuff * 0.45) {
+  if (Math.random() < blockChance - netOffBuff * 0.2) {
     return { made: false, pts, contestPct: 1, blocked: true, stolen: false }
   }
-  if (Math.random() < stealChance - netOffBuff * 0.7) {
+  if (Math.random() < stealChance - netOffBuff * 0.5) {
     return { made: false, pts, contestPct: 0, blocked: false, stolen: true }
   }
 
   const defContestAbility = defender.ratings.defense.overall / 300 + defenderZoneSkill / 180 + (heightDiff * 0.004);
   const contestPct = Math.max(0, Math.min(1, Math.random() * (threeAttempt ? 0.8 : 1) * defContestAbility));
 
-  const shotMakeSkill = (shooterBaseSkill / 100) + (shooterZoneSkill / 400);
-  const shotChance = shotMakeSkill - (contestPct / 2.2) + astBuff + weightBuff + netOffBuff;
+  const shotMakeSkill = (shooterBaseSkill / 120) + (shooterZoneSkill / 400);
+  const shotChance = shotMakeSkill - (contestPct / 2.3) + astBuff + weightBuff + netOffBuff;
   const made = shotChance > Math.random();
 
   // console.log('-');
@@ -293,9 +294,7 @@ function resolveRebound(offPlayers: Player[], defPlayers: Player[]): { player: P
     const sum = ps.reduce((prev, curr) => prev + curr.score, 0);
     var choice = Math.random();
     for (const p of ps) {
-      if (choice < p.score / sum) {
-        return p;
-      }
+      if (choice < p.score / sum) return p;
       choice -= p.score / sum;
     }
     return undefined;
@@ -304,13 +303,13 @@ function resolveRebound(offPlayers: Player[], defPlayers: Player[]): { player: P
   let sortedOff = offPlayers.map(p => 
     ({ player: p, height: p.height, weight: p.weight,
       contested: p.ratings.rebounding.contested_rebounding,
-      score: ((p.ratings.rebounding.oreb * 0.2 + p.ratings.impact * 0.1) / 100) + (heightInches(p.height) - 72) / 180 })
+      score: ((p.ratings.rebounding.oreb * 0.24 + p.ratings.impact * 0.1) / 100) + (heightInches(p.height) - 72) / 160 })
   ).sort((a, b) => b.score - a.score);
 
   let sortedDef = defPlayers.map(p => 
     ({ player: p, height: p.height, weight: p.weight,
       contested: p.ratings.rebounding.contested_rebounding,
-      score: ((p.ratings.rebounding.dreb * 0.4 + p.ratings.impact * 0.2) / 100) + (heightInches(p.height) - 72) / 180 })
+      score: ((p.ratings.rebounding.dreb * 0.4 + p.ratings.impact * 0.16) / 100) + (heightInches(p.height) - 72) / 160 })
   ).sort((a, b) => b.score - a.score);
 
   while (sortedOff.length > 0 && sortedDef.length > 0) {
@@ -390,13 +389,13 @@ function pickDefender(defenders: Player[], _zone: CourtZone, offenseIndex: numbe
   if (offenseIndex) {}
 
   const ovrDefenseChange = 2.4;
-  const sum = defenders.reduce((prev, curr) => prev + curr.ratings.defense.overall / ovrDefenseChange + defenseForZone(_zone, curr) + 2, 0);
+  const sum = defenders.reduce((prev, curr) => prev + curr.ratings.defense.overall / ovrDefenseChange + defenseForZone(_zone, curr) + 4, 0);
   const sorted = defenders.sort((b, a) => (a.ratings.defense.overall / ovrDefenseChange + defenseForZone(_zone, a)) - 
       (b.ratings.defense.overall / ovrDefenseChange + defenseForZone(_zone, b)));
 // console.log(sorted.map(a => a.name + ", " + (a.ratings.defense.overall / 3 + defenseForZone(_zone, a)) / sum ))
   var select = Math.random();
   for (const p of sorted) {
-    let chunk = p.ratings.defense.overall / ovrDefenseChange + defenseForZone(_zone, p) + 2;
+    let chunk = p.ratings.defense.overall / ovrDefenseChange + defenseForZone(_zone, p) + 4;
     if (select < chunk / sum) {
         return p;
     }

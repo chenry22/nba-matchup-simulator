@@ -5,7 +5,7 @@ interface Props {
 }
 
 export default function BoxScore({ game }: Props) {
-  const headerStyle = { fontSize: '1.3rem', marginTop: '0px', fontWeight: 'bold', marginBottom: '10px' };
+  const headerStyle = { fontSize: '1.5rem', marginTop: '0px', fontWeight: 'bold', marginBottom: '14px' };
 
   function shootingPct(attempts: number, made: number) : string {
     if (attempts > 0) {
@@ -60,7 +60,7 @@ export default function BoxScore({ game }: Props) {
   return (
     <div style={{
       display:' flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'start',
-      margin: 'auto 0'
+      margin: 'auto 0', width: '100%'
     }}>
       <div style={{...headerStyle, color: game.teamA.color}}>{game.teamA.name}</div>
       <div style={{ width: '100%', overflow: 'auto' }}>

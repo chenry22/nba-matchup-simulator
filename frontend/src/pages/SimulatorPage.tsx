@@ -91,11 +91,18 @@ export default function SimulatorPage() {
 
   return (
     <div style={styles.container}>
-      <div style={{ display: 'flex', gap: '0.8rem', margin: '10px 16px 0' }}>
+      <div className="wide-tabs" style={{ gap: '0.8rem', margin: '10px 16px 0' }}>
         <div onClick={() => nav('/')} style={{ color: 'white', alignSelf: 'center', marginLeft: '20px', cursor: 'pointer' }}>⌂ Home</div>
         <div style={tab === 'teamBuilder' ? styles.activeTab : styles.tab} onClick={() => setTab('teamBuilder')}>Build Teams</div>
         <div style={tab === 'simulator' ? styles.activeTab : styles.tab} onClick={() => setTab('simulator')}>Simulate</div>
         <div style={tab === 'players' ? styles.activeTab : styles.tab} onClick={() => setTab('players')}>Player Index</div>
+      </div>
+
+      <div className="mobile-tabs" style={{ gap: '0.6rem', margin: '10px 16px 0' }}>
+        <div onClick={() => nav('/')} style={{ color: 'white', alignSelf: 'center', marginLeft: '20px', cursor: 'pointer' }}>⌂ Home</div>
+        <div style={tab === 'teamBuilder' ? styles.activeTab : styles.mobileTab} onClick={() => setTab('teamBuilder')}>Teams</div>
+        <div style={tab === 'simulator' ? styles.activeTab : styles.mobileTab} onClick={() => setTab('simulator')}>Sim</div>
+        <div style={tab === 'players' ? styles.activeTab : styles.mobileTab} onClick={() => setTab('players')}>Players</div>
       </div>
 
       <div style={{...styles.page, display: tab === 'players' ? 'block' : 'none'}}>
@@ -202,13 +209,13 @@ export default function SimulatorPage() {
             <div style={{ position: 'fixed', background: '#00000075', 
               width: '100%', height: '100%', top: 0, left: 0
             }} onClick={() => setShowBoxScore(false)}>
-              <div style={{...styles.overlayBg, maxWidth: '80%', minWidth: '440px',}} onClick={(e) => e.stopPropagation()}>
+              <div style={{...styles.overlayBg, width: '70%', maxWidth: '860px',}} onClick={(e) => e.stopPropagation()}>
                 <BoxScore game={game}/>
-              </div>
-              <span style={{ position: 'absolute', top: '2dvh', right: '6%', fontSize: '1.3rem', lineHeight: '1.5rem', fontWeight: 'bold',
-                  backgroundColor: 'darkblue', borderRadius: '24px', padding: '6px 12px', cursor: 'pointer', color: 'white'
+                <span style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '1.3rem', lineHeight: '1.5rem', fontWeight: 'bold',
+                  backgroundColor: 'darkblue', borderRadius: '24px', padding: '4px 12px', cursor: 'pointer', color: 'white'
                 }} onClick={() => setShowBoxScore(false)}
                 >x</span>
+              </div>
             </div>
           }
         </div>
@@ -246,6 +253,10 @@ const styles: Record<string, CSSProperties> = {
   tab: {
     background: bgColor, opacity: 0.8,
     padding: '12px 16px', cursor: 'pointer',
+  },
+  mobileTab: {
+    background: bgColor, opacity: 0.8,
+    padding: '8px 12px', cursor: 'pointer',
   },
 
   page: {

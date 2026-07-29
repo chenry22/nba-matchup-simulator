@@ -54,13 +54,15 @@ export const searchForPlayer = async (key: string) => {
         startAt(firstName ?? str), limit(3)
     ));
     const lastNameMatches = await getDocs(query(
-        collection(db, "player"), orderBy("lastName"),
-        startAt(lastName ?? str), limit(3)
+        collection(db, "player"), firstName ? where("firstName", '==', firstName) : limit(3),
+        orderBy("lastName"),
+        startAt(lastName ?? str),
+        limit(3)
     ));
     const matches: FirebasePlayerMatch[] = [];
     firstNameMatches.forEach(d => {
         const p = {...d.data(), id: parseInt(d.id) } as FirebasePlayerMatch;
-        if (p && p.firstName.startsWith(firstName ?? str)) {
+        if (p && p.firstName.startsWith(firstName ?? str) && p.lastName.startsWith(lastName ?? "")) {
             matches.push(p);
         }
     });
