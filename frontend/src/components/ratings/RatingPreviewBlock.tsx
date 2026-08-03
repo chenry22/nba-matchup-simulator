@@ -13,14 +13,14 @@ export default function RatingPreviewBlock({ p, setRatingProfileOverlay } : Prop
 
   return <div key={p.id} 
     className="hover-pop"
-    style={{ display: 'flex', gap: '8px', background: 'white', padding: '10px', 
+    style={{ display: 'flex', gap: '6px', background: 'white', padding: '8px', 
       borderRadius: '8px', border: '2px solid gray', cursor: 'pointer',
       boxShadow: '-4px 4px 8px #b5b6c1',
     }}
     onClick={() => setRatingProfileOverlay(p)}
   >
     <img src={`https://cdn.nba.com/headshots/nba/latest/260x190/${p.id}.png`}
-      style={{ maxWidth: '5.5rem', objectFit: 'contain'}}></img>
+      style={{ maxWidth: '5.4rem', objectFit: 'contain'}}></img>
     <div style={{ display: 'flex', flexDirection: 'column', 
       justifyContent: 'center', textAlign: 'center', 
       alignItems: 'center', gap: '2px' 

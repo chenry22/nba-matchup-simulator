@@ -159,6 +159,14 @@ code {
   .wide-tabs {
     display: none;
   }
+
+  .mobile-display {
+    display: flex;
+    gap: 14px;
+  }
+  .wide-display {
+    display: none;
+  }
 }
 
 @media (min-width: 780px) {
@@ -167,5 +175,13 @@ code {
   }
   .wide-tabs {
     display: flex;
+  }
+
+  .mobile-display {
+    display: none;
+  }
+  .wide-display {
+    display: flex;
+    gap: 14px;
   }
 }

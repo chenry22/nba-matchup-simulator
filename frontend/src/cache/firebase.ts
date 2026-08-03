@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getDocs, arrayUnion, collection, doc, getDoc, getFirestore, limit, orderBy, query, setDoc, startAt, where, collectionGroup } from "firebase/firestore";
-import type { Player } from "../sim/types";
+import type { Player, PlayerSelect } from "../sim/types";
+import { idCache } from "./idCache";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -88,6 +89,29 @@ export const loadPlayersFromSeason = async (season: string) => {
         ));
         
         return docs.docs;
+    } catch(e) {
+        console.warn(e);
+        return [];
+    }
+}
+
+export const loadRandomPlayers = async (count: number = 5) => {
+    try {
+        const randIds = idCache.sort(() => 0.5 - Math.random()).slice(0, count);
+
+        var playerData = [];
+        for(const id of randIds) {
+            const res = await getDoc(doc(db, "player/" + id));
+            const data = res.data();
+            if (data) {
+                const szns = data['seasons'];
+                playerData.push({ id, ...data, 
+                    full_name: data['firstName'] + " " + data['lastName'],
+                    selectedSeason: szns[Math.floor(Math.random() * szns.length)]
+                } as PlayerSelect);
+            }
+        }
+        return playerData;
     } catch(e) {
         console.warn(e);
         return [];

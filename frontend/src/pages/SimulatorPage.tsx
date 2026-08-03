@@ -114,8 +114,6 @@ export default function SimulatorPage() {
 
       { tab === 'teamBuilder' && 
         <div style={styles.page}>
-          <h2 style={{ fontWeight: 'bold' }}>Build Teams</h2>
-
           <div className="mobile-wrap" style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
             <TeamBuilder team={teamA} setTeam={setTeamA}/>
             <TeamBuilder team={teamB} setTeam={setTeamB}/>
@@ -209,7 +207,7 @@ export default function SimulatorPage() {
             <div style={{ position: 'fixed', background: '#00000075', 
               width: '100%', height: '100%', top: 0, left: 0
             }} onClick={() => setShowBoxScore(false)}>
-              <div style={{...styles.overlayBg, width: '70%', maxWidth: '860px',}} onClick={(e) => e.stopPropagation()}>
+              <div style={{...styles.overlayBg, width: '70%', maxWidth: '940px',}} onClick={(e) => e.stopPropagation()}>
                 <BoxScore game={game}/>
                 <span style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '1.3rem', lineHeight: '1.5rem', fontWeight: 'bold',
                   backgroundColor: 'darkblue', borderRadius: '24px', padding: '4px 12px', cursor: 'pointer', color: 'white'

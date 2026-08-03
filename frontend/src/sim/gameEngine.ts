@@ -115,8 +115,8 @@ function simulatePossession(state: GameState, shotClock: number): Event[] {
       let passTime = Math.floor(Math.random() * 5.8 + 1);
 
       // pass tendency positively affects passing, low shot tendency poasitively impacts
-      let passChance = 0.2 + (ballHandler.ratings.playmaking.pass_tendency / 240)
-        - (passes * 0.07) + (Math.max(0, 50 - ballHandler.ratings.shot_tendency) * 0.004);
+      let passChance = 0.2 + (ballHandler.ratings.playmaking.pass_tendency / 320)
+        - (passes * 0.07) + (Math.max(0, 40 - ballHandler.ratings.shot_tendency) * 0.05);
 
       if (state.shotClock - passTime > 0 && Math.random() < passChance) {
         passes++;
@@ -225,15 +225,16 @@ function simulatePossession(state: GameState, shotClock: number): Event[] {
 
 function resolveShotAttempt(shooter: Player, defender: Player, assister: Player | null, zone: CourtZone, shotType: ShotType): { made: boolean; pts: 2 | 3; contestPct: number; blocked: boolean; stolen: boolean; } {
   const zoneStats = shooter.ratings.scoring.zones[zone];
-  const shooterZoneSkill = zoneStats.skill + (assister ? zoneStats.ast_buff * 0.4 : 0);
+  const shooterZoneSkill = Math.max(100, zoneStats.skill) + (assister ? zoneStats.ast_buff * 0.4 : 0);
   const astBuff = assister ? assister.ratings.playmaking.ast / 540 + assister.ratings.impact / 900 : 0;
-  const netOffBuff = (shooter.ratings.impact - defender.ratings.impact) / 800;
+  const netOffBuff = (shooter.ratings.impact - defender.ratings.impact) / 1000;
   
-  // soilly, idc
+  // soilly, idc, for compiling purposes
   if (shotType) { }
 
-  let shooterBaseSkill = Math.max(10, 
-    (shooter.ratings.scoring.efficiency / 1.6) + ((Math.pow(shooter.ratings.scoring.overall, 2) - 1600) / 360)
+  let shooterBaseSkill = Math.max(20, 
+    (shooter.ratings.scoring.efficiency / 1.6) 
+    + ((Math.pow(Math.min(100, shooter.ratings.scoring.overall) - defender.ratings.defense.overall * 0.3, 2) - 800) / 500)
   );
   let defenderZoneSkill = 0;
   let pts: 2 | 3 = 2;
@@ -245,36 +246,36 @@ function resolveShotAttempt(shooter: Player, defender: Player, assister: Player 
     defenderZoneSkill = defender.ratings.defense.paint_non_ra; 
   } else { 
     defenderZoneSkill = defender.ratings.defense.three; 
-    shooterBaseSkill *= (0.22 + (shooter.ratings.scoring.three / 100) * 0.64);
+    shooterBaseSkill *= (0.18 + (shooter.ratings.scoring.three / 100) * 0.6);
     pts = 3;
   }
 
   // how much taller is defender
   const heightDiff = heightInches(defender.height) - heightInches(shooter.height);
-  let blockChance = Math.max((defender.ratings.defense.blk / 390) + (heightDiff * 0.002), 0.01);
-  let stealChance = Math.max((defender.ratings.defense.stl / 320) - (shooter.ratings.playmaking.tov / 500) - (heightDiff * 0.004), 0.01);
+  let blockChance = Math.max((defender.ratings.defense.blk / 380) + (heightDiff * 0.002), 0.01);
+  let stealChance = Math.max((defender.ratings.defense.stl / 300) - (shooter.ratings.playmaking.tov / 500) - (heightDiff * 0.004), 0.01);
 
   const threeAttempt = zone === "above_break_3" || zone === "left_corner_3" || zone === "right_corner_3";
   if (threeAttempt) {
     blockChance *= 0.4;
-    stealChance *= 0.28;
+    stealChance *= 0.35;
   }
   const weightBuff = zone === 'restricted_area' || zone === 'paint_non_ra' ? (parseInt(shooter.weight) - parseInt(defender.weight)) * 0.002 : 0;
   if (weightBuff > 0) {
     blockChance -= weightBuff / 2;
   }
-  if (Math.random() < blockChance - netOffBuff * 0.2) {
+  if (Math.random() < blockChance - netOffBuff * 0.14) {
     return { made: false, pts, contestPct: 1, blocked: true, stolen: false }
   }
-  if (Math.random() < stealChance - netOffBuff * 0.5) {
+  if (Math.random() < stealChance - netOffBuff * 0.4) {
     return { made: false, pts, contestPct: 0, blocked: false, stolen: true }
   }
 
   const defContestAbility = defender.ratings.defense.overall / 300 + defenderZoneSkill / 180 + (heightDiff * 0.004);
   const contestPct = Math.max(0, Math.min(1, Math.random() * (threeAttempt ? 0.8 : 1) * defContestAbility));
 
-  const shotMakeSkill = (shooterBaseSkill / 120) + (shooterZoneSkill / 400);
-  const shotChance = shotMakeSkill - (contestPct / 2.3) + astBuff + weightBuff + netOffBuff;
+  const shotMakeSkill = (shooterBaseSkill / 120) + (shooterZoneSkill / 370);
+  const shotChance = shotMakeSkill - (contestPct / 2.4) + astBuff + weightBuff + netOffBuff;
   const made = shotChance > Math.random();
 
   // console.log('-');

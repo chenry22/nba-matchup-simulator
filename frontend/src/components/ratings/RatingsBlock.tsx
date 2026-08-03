@@ -35,30 +35,60 @@ export default function RatingsBlock({ p } : Props) {
 
   return <div style={{ margin: '0px' }}>
       <div style={styles.row}>
-        <img style={{ objectFit: 'contain', width: '12rem', maxWidth: '45%' }} 
-          src={`https://cdn.nba.com/headshots/nba/latest/520x380/${p.id}.png`}></img>
-        <div style={{ color: 'darkslategray' }}>
-          <h2 style={{ fontSize: '1.4rem', lineHeight: '1.5rem', color: 'black' }}>{p.name} ({p.season})</h2> 
-          <div>
-            <span style={{...teamStyles[p.team], 
-              borderRadius: '8px', borderWidth: '1px', marginRight: '8px', padding: '4px 6px',
-              fontWeight: 'bold', fontSize: '0.7rem'
-            }}>{p.team}</span>
+        <div className="wide-display">
+          <img style={{ objectFit: 'contain', width: '12rem', maxWidth: '45%' }} 
+            src={`https://cdn.nba.com/headshots/nba/latest/520x380/${p.id}.png`}></img>
 
-            {p.height}, {p.weight}lb | {p.position}</div>
-          <div>{p.mins} MPG | {p.gp} Games Played</div>
+          
+          <div style={{ color: 'darkslategray' }}>
+            <h2 style={{ fontSize: '1.4rem', lineHeight: '1.5rem', color: 'black' }}>{p.name} ({p.season})</h2> 
+            <div>
+              <span style={{...teamStyles[p.team], 
+                borderRadius: '8px', borderWidth: '1px', marginRight: '8px', padding: '4px 6px',
+                fontWeight: 'bold', fontSize: '0.7rem'
+              }}>{p.team}</span>
 
-          <div style={{...styles.row, flexWrap: 'wrap', margin: '14px 0' }}>
-            { ratingNumBlock(getOverall(ratings), "OVERALL") }
-            { ratingNumBlock(ratings.impact, "IMPACT") }
-            { ratingNumBlock(ratings.scoring.overall, "SCORING") }
-            { ratingNumBlock(ratings.scoring.three, "3PT") }
-            { ratingNumBlock(ratings.defense.overall, "DEFENSE") }
-            { ratingNumBlock(ratings.shot_tendency, "SHOT TENDENCY") }
-            { ratingNumBlock(ratings.usage, "USAGE") }
+              {p.height}, {p.weight}lb | {p.position}</div>
+            <div>{p.mins} MPG | {p.gp} Games Played</div>
+
+            <div style={{...styles.row, flexWrap: 'wrap', margin: '14px 0' }}>
+              { ratingNumBlock(getOverall(ratings), "OVERALL") }
+              { ratingNumBlock(ratings.impact, "IMPACT") }
+              { ratingNumBlock(ratings.scoring.overall, "SCORING") }
+              { ratingNumBlock(ratings.scoring.three, "3PT") }
+              { ratingNumBlock(ratings.defense.overall, "DEFENSE") }
+              { ratingNumBlock(ratings.shot_tendency, "SHOT TENDENCY") }
+              { ratingNumBlock(ratings.usage, "USAGE") }
+            </div>
+          </div>
+        </div>
+
+        <div className="mobile-display">
+          <img style={{ objectFit: 'contain', width: '7rem', maxWidth: '45%', marginBottom: '8px' }} 
+            src={`https://cdn.nba.com/headshots/nba/latest/520x380/${p.id}.png`}></img>
+          <div style={{ color: 'darkslategray' }}>
+            <h2 style={{ fontSize: '1.4rem', lineHeight: '1.5rem', color: 'black' }}>{p.name} ({p.season})</h2> 
+            <div>
+              <span style={{...teamStyles[p.team], 
+                borderRadius: '8px', borderWidth: '1px', marginRight: '8px', padding: '4px 6px',
+                fontWeight: 'bold', fontSize: '0.7rem'
+              }}>{p.team}</span>
+
+              {p.height}, {p.weight}lb | {p.position}</div>
+            <div>{p.mins} MPG | {p.gp} Games Played</div>
           </div>
         </div>
       </div>
+
+      <div  className='mobile-display' style={{...styles.row, display: '', flexWrap: 'wrap', margin: '14px 0' }}>
+          { ratingNumBlock(getOverall(ratings), "OVERALL") }
+          { ratingNumBlock(ratings.impact, "IMPACT") }
+          { ratingNumBlock(ratings.usage, "USAGE") }
+          { ratingNumBlock(ratings.scoring.overall, "SCORING") }
+          { ratingNumBlock(ratings.scoring.three, "3PT") }
+          { ratingNumBlock(ratings.shot_tendency, "SHOT TENDENCY") }
+          { ratingNumBlock(ratings.defense.overall, "DEFENSE") }
+        </div>
 
       <div style={{...styles.row, gap: '40px', flexWrap: 'wrap', rowGap: '20px' }}>
         <div style={{...styles.col, justifyContent: 'left'}}>

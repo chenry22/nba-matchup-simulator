@@ -1,7 +1,7 @@
-import { type ChangeEvent } from "react";
+import { useState, type ChangeEvent } from "react";
 import PlayerSearch from "./PlayerSearch";
 import type { Team } from "../sim/types";
-import type { FirebasePlayerMatch } from "../cache/firebase";
+import { loadRandomPlayers, type FirebasePlayerMatch } from "../cache/firebase";
 
 interface Props {
   team: Team;
@@ -35,12 +35,24 @@ export default function TeamBuilder({ team, setTeam }: Props) {
     setTeam({...team, rosterSelect: newTeam});
   }
 
+  const getRandomPlayers = async () => {
+    const players = await loadRandomPlayers(randCount)
+    setTeam({...team, rosterSelect: players})
+  }
+
   const setColor = (color: string) => setTeam({ ...team, color });
   const setName = (name: string) =>  setTeam({...team, name});
 
+  const [randCount, setRandCount] = useState(5);
+
+  const buttonStyle = { color: 'black', border: '1px solid lightgray', padding: '3px 6px', 
+    background: 'white', borderRadius: '4px', cursor: 'pointer', 
+    display: 'flex', gap: '4px', alignItems: 'center', fontSize: '0.7rem'
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', padding: '12px 20px',
-      backgroundColor: team.color+ '20',
+      backgroundColor: team.color + '20',
       border: '1px solid lightgray', boxShadow: '-2px 2px 8px lightgray'}}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px', 
@@ -48,6 +60,15 @@ export default function TeamBuilder({ team, setTeam }: Props) {
       }}>
         <input style={{ fontSize: '0.7rem', fontWeight: 'bold', padding: '2px 4px' }} defaultValue={team.name} onChange={e => setName(e.target.value)}></input>
         <input type="color" defaultValue={team.color} onChange={e => setColor(e.target.value)}></input>
+      </div>
+
+      <div style={{ display: 'flex', gap: '4px' }}>
+        <div style={buttonStyle} onClick={() => getRandomPlayers()}>
+          <input onClick={(e) => e.stopPropagation()} onChange={(e) => setRandCount(parseInt(e.target.value))} defaultValue={randCount} type="number" min={0} max={5}></input>
+          <span>Randomize</span>
+        </div>
+
+        <div style={buttonStyle} onClick={() => setTeam({...team, rosterSelect: [] })}>Clear All [X]</div>
       </div>
 
       <PlayerSearch onSelect={addPlayer}/>

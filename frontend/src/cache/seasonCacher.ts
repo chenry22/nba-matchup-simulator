@@ -42,26 +42,33 @@ const cachePlayerData = async (data: Player) => {
     await setDoc(doc(db, `player/${data.id}/season/${data.season}`), data);
     await setDoc(doc(db, `player/${data.id}`), { 
         firstName: data.name.split(" ")[0].toLowerCase(),
-        lastName: data.name.split(" ")[1].toLowerCase(),
+        lastName: data.name.split(" ")[1]?.toLowerCase() ?? "",
         seasons: arrayUnion(data.season)
     }, { merge: true });
     console.log(`Cached ${data.name} data at: player/${data.id}/season/${data.season}`)
 }
 
 async function main() {
-    console.log("starting")
-    const szn = '2020-21';
-    const sznData = await getPlayerIdsForSeason(szn);
-    const ids = sznData as number[];
-    console.log("Found " + ids.length + " players");
+  const szn = '2017-18';
+  const sznData = await getPlayerIdsForSeason(szn);
+  const ids = sznData as number[];
+  console.log("Found " + ids.length + " players for " + szn);
 
-    for(const id of ids){
-        if (await getCachedPlayerData(id, szn)) {
-            console.log("   (cached)");
-            continue;
-        }
-        const p = await getPlayerData(id, szn);
-        if (p as Player) { cachePlayerData(p as Player) }
-    }
+  for(const id of ids){
+      if (await getCachedPlayerData(id, szn)) {
+          console.log("   (cached)");
+          continue;
+      }
+      const p = await getPlayerData(id, szn);
+      if (p as Player) { cachePlayerData(p as Player) }
+  }
 }
+
+// async function getAllIds() {
+//   const players = await getDocs(collection(db, 'player'));
+//   const ids = players.docs.map(p => p.id);
+//   console.log("[" + ids.join(", ") + "]");
+// }
+
 main().catch(console.error);
+// getAllIds();

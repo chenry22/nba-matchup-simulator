@@ -19,7 +19,7 @@ from nba_api.stats.endpoints import (
     playerdashptshotdefend,
 )
 
-DELAY_TIME = 1
+DELAY_TIME = 0.3
 
 PACE_DICT = { "1946-47": 93.7, "1947-48": 91.9, "1948-49": 84.1, "1949-50": 93.1,
     "1950-51": 91.3, "1951-52": 88.3, "1952-53": 90.7, "1953-54": 93.1, "1954-55": 92.9,
@@ -171,6 +171,7 @@ class NBAService:
             scoring["blka_per100"] = float(basic['BLKA'])
             scoring["fl_pct"] = float(use['PCT_PFD']) if not use.empty else -1
         except:
+            print("   FAILED TO PARSE SCORING, USING FALLBACK")
             default_pct = float(basic["FG_PCT"])
             three_pct = float(basic["FG3_PCT"] or 0)
             three_rate = float(basic["FG3A"] or 0) / gp * pace_adjust
@@ -223,6 +224,7 @@ class NBAService:
             defense['stl_per100'] = float(basic['STL'])
             defense['fl_pct'] = float(use["PCT_PF"]) if not use.empty else -1
         except: 
+            print("   FAILED TO PARSE DEFENSE, USING FALLBACK")
             defense = {
                 "overall" : 0,
                 "restricted_area" : { "fga": 0, "fg_pct" : -1, "pct_plusmin" : DEF_FOR_POS[pos_key][0] },
@@ -243,6 +245,7 @@ class NBAService:
             rebounding['dreb_per100'] = float(basic['DREB'])
             rebounding['oreb_per100'] = float(basic['OREB'])
         except: 
+            print("   FAILED TO PARSE REBOUNDING, USING FALLBACK")
             rebounding = {
                 "c_rb_pct" : REB_FOR_POS[pos_key][0],
                 "oreb_to_dreb" : 0.25,
@@ -258,6 +261,7 @@ class NBAService:
                 "tov_rate" : float(advanced.iloc[0]['TOV_PCT']), # how often TOVing
             }
         except:
+            print("   FAILED TO PARSE PLAYMAKING, USING FALLBACK")
             playmaking = {
                 "ast_per100" : float(basic['AST']) / gp * pace_adjust,
                 "ast_rate" : float(basic['AST']) / gp * pace_adjust * 2, # how often assisting
@@ -271,6 +275,7 @@ class NBAService:
                 "pace" : float(advanced.iloc[0]['PACE'])
             }
         except: 
+            print("   FAILED TO PARSE TENDENCIES, USING FALLBACK")
             tendencies = {
                 "usg" : float(basic["PTS"]) / gp * pace_adjust / 80, 
                 "ast_rate" : float(basic['AST']) / gp * pace_adjust / 30,

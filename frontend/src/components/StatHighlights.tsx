@@ -82,7 +82,7 @@ export default function StatHighlights({ game }: Props) {
         display:' flex', flexDirection: 'column', justifyContent: 'stretch', alignItems: 'start', 
         gap: '20px', marginTop: '20px'
       }}>
-        <div>
+        <div style={{ width: '100%' }}>
           <div style={{...headerStyle, color: game.teamA.color, width: '100%'}}>
             {game.teamA.name} <span style={{ fontSize: '0.8rem', opacity: '0.6', marginLeft: '4px'}}>(Top Performers)</span>
             
